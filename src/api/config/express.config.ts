@@ -10,7 +10,8 @@ import {
   VIEWS_DIRECTORY,
   STATIC_DIRECTORY,
 } from '../../shared/constants/path.constants';
-import { isAnyArrayBuffer } from 'util/types';
+
+import { routes } from '../core/routes/v1/proxy.routes';
 
 class ExpressConfiguration {
   private static instance: ExpressConfiguration;
@@ -72,7 +73,10 @@ class ExpressConfiguration {
     this.express.set('view engine', 'ejs');
     this.express.set('views', VIEWS_DIRECTORY);
 
-    this.express.get('/', (_, r) => r.render('main'));
+    /**
+     * Routes
+     */
+    this.express.use(routes);
 
     return this;
   }
