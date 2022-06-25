@@ -4,9 +4,32 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/animations/animations.styles.css" />
+    <link rel="stylesheet" href="/styles/home/home.styles.css" />
     <title>Go Baron | HOME</title>
   </head>
   <body>
-    <h1 style="text-align: center">Main/home</h1>
+    <div id="root" data-id="root">
+      <main class="main-container">
+        <div class="views">
+          <img class="views__icon" src="/assets/public-icon.svg" />
+          <output class="views__output hidden">200</output>
+
+          <div class="spinner"></div>
+
+          <span class="views__text">
+            Visualizações totais. <br />
+            Atualize a página para modificar/total.
+          </span>
+        </div>
+
+        <span class="public-text">
+          Acesse a API através da URL:
+          <a target="_blank" href="/api/v1/hits">/api</a>
+        </span>
+      </main>
+    </div>
   </body>
 </html>
