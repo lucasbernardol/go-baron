@@ -36,6 +36,13 @@
   background: transparent;
 }
 
+.not-found__info {
+  max-width: 80%;
+  font-size: 2.5rem;
+
+  line-height: 1.5;
+}
+
 .not-found__letter {
   font-size: inherit;
   color: inherit;
@@ -61,6 +68,14 @@
 
   max-width: 85%;
   margin: 0.8rem 0;
+}
+
+.not-found-team {
+  display: block;
+  margin-top: 1rem;
+
+  color: var(--color-text-dark);
+  font-size: 1.4rem;
 }
 
 .not-found__link {
@@ -99,7 +114,8 @@
 }
 
 @media (max-width: 680px) {
-  .not-found__text {
+  .not-found__text,
+  .not-found__info {
     max-width: 100%;
   }
 }

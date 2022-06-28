@@ -24,6 +24,18 @@
   }
 }
 
+@media (max-width: 720px) {
+  :root {
+    font-size: 52%;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 50%; /** 8px */
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
