@@ -17,4 +17,9 @@ routes.get('/', controller.home);
  */
 routes.use('/api/v1', HitRouter);
 
+/**
+ * @route "/*" - Not found
+ */
+routes.get('*', controller.renderNotFoundTemplate);
+
 export { routes };

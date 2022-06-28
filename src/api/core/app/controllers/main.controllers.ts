@@ -14,4 +14,18 @@ export class MainController {
       return next(error);
     }
   }
+
+  async renderNotFoundTemplate(
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) {
+    try {
+      const templateName = '404';
+
+      return response.render(templateName);
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
