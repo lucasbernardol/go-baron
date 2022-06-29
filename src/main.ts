@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { Application } from './api/config/express.config';
 import { Server } from './api/config/server.config';
 
