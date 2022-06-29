@@ -49,8 +49,6 @@ class ExpressConfiguration {
     this.express.use(express.json());
     this.express.use(express.urlencoded({ extended: false }));
 
-    this.express.use(express.static(STATIC_DIRECTORY));
-
     /**
      * - "helmet" Headers
      */
@@ -66,6 +64,8 @@ class ExpressConfiguration {
      * HTTP request logger.
      */
     this.express.use(morgan('dev'));
+
+    this.express.use(express.static(STATIC_DIRECTORY));
 
     /**
      * - Client/static files
