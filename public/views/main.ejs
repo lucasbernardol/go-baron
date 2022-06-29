@@ -15,6 +15,9 @@
 
     <link rel="stylesheet" href="/styles/components/spinner.styles.css" />
     <link rel="stylesheet" href="/styles/pages/home.styles.css" />
+
+    <script defer src="/scripts/home.scripts.js"></script>
+
     <title>Go Baron | HOME</title>
   </head>
   <body>
@@ -22,14 +25,14 @@
       <main class="main-container">
         <div class="views">
           <img class="views__icon" src="/assets/public-icon.svg" />
-          <output class="views__output hidden">200</output>
+          <output class="views__output hidden" data-id="output">200</output>
 
           <!-- Loader/spinner -->
           <%- include('partials/spinner.partial.ejs', { visible: true }); %>
 
           <span class="views__text">
-            Visualizações totais. <br />
-            Atualize a página para modificar/total.
+            Você pode modificar as <br />
+            visualizações atualizando (F5) a página.
           </span>
         </div>
 
