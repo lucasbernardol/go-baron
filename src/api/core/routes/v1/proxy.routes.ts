@@ -20,6 +20,6 @@ routes.use('/api/v1', HitRouter);
 /**
  * @route "/*" - Not found
  */
-routes.get('*', controller.renderNotFoundTemplate);
+routes.get('*', controller.notFound);
 
 export { routes };

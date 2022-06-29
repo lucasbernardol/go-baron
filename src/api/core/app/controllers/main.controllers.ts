@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
+import {
+  MAIN_TEMPLATE_NAME,
+  NOT_FOUND_TEMPLATE_NAME,
+} from '../../../../shared/constants/views.constants';
+
 /** @class MainController */
 export class MainController {
   public constructor() {}
@@ -7,7 +12,7 @@ export class MainController {
   async home(request: Request, response: Response, next: NextFunction) {
     try {
       // @TODO: Render "home" page.
-      const template = 'main';
+      const template = MAIN_TEMPLATE_NAME;
 
       return response.render(template);
     } catch (error) {
@@ -15,15 +20,10 @@ export class MainController {
     }
   }
 
-  async renderNotFoundTemplate(
-    request: Request,
-    response: Response,
-    next: NextFunction
-  ) {
+  async notFound(_: Request, response: Response, next: NextFunction) {
     try {
-      const templateName = '404';
-
-      return response.render(templateName);
+      // file: "404.ejs"
+      return response.render(NOT_FOUND_TEMPLATE_NAME);
     } catch (error) {
       return next(error);
     }
