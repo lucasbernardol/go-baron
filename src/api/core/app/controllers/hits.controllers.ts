@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
+import { ServerResponse } from 'http';
+import { Server } from '../../../config/server.config';
 
 import { HitServices } from '../services/hits.services';
 
@@ -44,7 +46,7 @@ export class HitController {
     next: NextFunction
   ) {
     try {
-      const { private: hash } = request.params;
+      const { hash } = request.params;
 
       const services = new HitServices();
 
@@ -82,6 +84,71 @@ export class HitController {
       });
 
       return response.json(hit);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * Using: "public_hash"
+   */
+  async up(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { public_hash } = request.params;
+
+      const services = new HitServices();
+
+      const { hits } = await services.up(public_hash);
+
+      return response.json({ hits });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async down(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { public_hash } = request.params;
+
+      const services = new HitServices();
+
+      const { hits } = await services.down(public_hash);
+
+      return response.json({ hits });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * Using: "private_hash"
+   */
+  async set(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { private_hash } = request.params;
+
+      const { hits } = request.body as { hits: number };
+
+      const services = new HitServices();
+
+      const data = await services.set(private_hash, hits);
+
+      return response.json(data);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async delete(request: Request, response: Response, next: NextFunction) {
+    try {
+      // @TODO: Delete: "/hits/:private_hash"
+      const { private_hash } = request.params;
+
+      const services = new HitServices();
+
+      const data = await services.delete(private_hash);
+
+      return response.json(data);
     } catch (error) {
       return next(error);
     }

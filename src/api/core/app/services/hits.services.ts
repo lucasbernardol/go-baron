@@ -1,3 +1,7 @@
+import { BadRequest } from 'http-errors';
+import { isNull, isUndefined } from 'util';
+import { isObjectID } from '../../../../shared/utils/isObjectID.util';
+
 import { Hits, Hit } from '../../../data/connections/monk.connection';
 
 import { hash } from '../providers/publicHash.provider';
@@ -20,6 +24,8 @@ export type HitOptions = {
 export type HitFindOptions = {
   setProtection?: boolean;
 };
+
+const isNullable = (value: any) => !value || typeof value === 'undefined';
 
 /**
  * @class HitServices
@@ -87,6 +93,9 @@ export class HitServices {
 
     const hitsPlainArray = await Hits.find(filter, {
       projection: allowCollectionFiledsToReturn,
+      sort: {
+        created_at: -1,
+      },
     });
 
     // @TODO: Normalid id
@@ -138,9 +147,14 @@ export class HitServices {
   }
 
   async findByID(id: string) {
-    const filter = { _id: id };
+    const isParamIsObjectID = isObjectID(id);
 
-    const hit = await this.findByParams(filter);
+    if (!isParamIsObjectID) {
+      // @TODO: Is "ObjectID"?
+      throw new BadRequest(`Provided HTTP param ERROR: "${id}"`);
+    }
+
+    const hit = await this.findByParams({ _id: id });
 
     return { hit };
   }
@@ -154,5 +168,103 @@ export class HitServices {
     });
 
     return { hit };
+  }
+
+  /**
+   * @method up
+   * @example
+   *  let hits = 10;
+   *  hits += 1;
+   */
+  async up(public_hash: string) {
+    const filter = { public_hash } as Hit;
+
+    const hitCollection = await Hits.findOneAndUpdate(filter, {
+      $inc: {
+        hits: 1,
+      },
+    });
+
+    const hits = hitCollection ? hitCollection.hits : null;
+
+    return { hits };
+  }
+
+  /**
+   * @method down
+   * @example
+   *  let hits = 10;
+   *  hits -= 1;
+   */
+  async down(public_hash: string) {
+    const filter = { public_hash } as Hit;
+
+    // TODO: Into database find "hit" instance.
+    const hitReturnedInstance = await Hits.findOne(filter);
+
+    const isNullableHitInstance = isNullable(hitReturnedInstance);
+
+    if (isNullableHitInstance) {
+      throw new BadRequest(`Provided HTTP params ERROR: "${public_hash}"`);
+    }
+
+    // @TODO: down "hits" with "public_hash".
+    const { allow_negative, hits: currentHits } = hitReturnedInstance;
+
+    const DOWN_OPERATOR_VALUE = -1;
+
+    const operator = allow_negative ? DOWN_OPERATOR_VALUE : 0;
+
+    const hitsToDecrement = currentHits === 0 ? operator : DOWN_OPERATOR_VALUE;
+
+    const { hits } = await Hits.findOneAndUpdate(filter, {
+      $inc: {
+        hits: hitsToDecrement,
+      },
+    });
+
+    return { hits };
+  }
+
+  async set(private_hash: string, value: number) {
+    const filter = { private_hash } as Hit;
+
+    const hitReturnedPlainInstance = await Hits.findOne(filter);
+
+    const isNullableHitPlainInstance = isNullable(hitReturnedPlainInstance);
+
+    if (isNullableHitPlainInstance) {
+      throw new BadRequest(`Provided HTTP param ERROR: "${private_hash}"`);
+    }
+
+    // @TODO: set value
+    const {
+      allow_set,
+      allow_negative,
+      hits: currentHits,
+    } = hitReturnedPlainInstance;
+
+    const hitsToSet = value <= 0 && !allow_negative ? currentHits : value;
+
+    const hitsToSetInDatabase = allow_set ? hitsToSet : currentHits;
+
+    const { hits } = await Hits.findOneAndUpdate(filter, {
+      $set: {
+        hits: hitsToSetInDatabase,
+      },
+    });
+
+    return { hits };
+  }
+
+  /** @method delete */
+  async delete(private_hash: string) {
+    const hitCollectionDeleted = await Hits.remove({
+      private_hash,
+    });
+
+    const { deletedCount: deleted_count } = hitCollectionDeleted;
+
+    return { deleted_count };
   }
 }
