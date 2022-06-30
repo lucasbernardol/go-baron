@@ -1,13 +1,15 @@
-import { BadRequest } from 'http-errors';
+import createHttpError, { BadRequest } from 'http-errors';
 import { paginate } from 'paging-util';
+
+import { hash } from '../providers/publicHash.provider';
+import { uuid } from '../providers/uuid.provider';
+
+import { Hits, Hit } from '../../../data/connections/monk.connection';
 
 import { isObjectID } from '../../../../shared/utils/isObjectID.util';
 import { likeRegexpOperator } from '../../../../shared/utils/regexp.utills';
 import { descAndAscToDecimal } from '../../../../shared/utils/sorting.util';
-import { Hits, Hit } from '../../../data/connections/monk.connection';
-
-import { hash } from '../providers/publicHash.provider';
-import { uuid } from '../providers/uuid.provider';
+import { isNullable } from '../../../../shared/utils/isNullable.util';
 
 export type HitDTO = {
   title?: string;
@@ -24,27 +26,29 @@ type MatchOptions = {
   title?: any;
 };
 
-export type HitPagination = {
+export type HitPaginationQueries = {
   page: number | any;
   limit?: number | any;
   q?: string | any;
   sorting?: {
-    /** collection field name  */
     order_by: string;
     sort_by: string;
   };
 };
 
 export type HitOptions = {
-  onlyHitsPinned?: boolean;
-  queries: HitPagination;
+  onlyPinned?: boolean;
+  queries: HitPaginationQueries;
 };
 
 export type HitFindOptions = {
   setProtection?: boolean;
 };
 
-const isNullable = (value: any) => !value || typeof value === 'undefined';
+type HitUpdateOptions = {
+  private_hash: string;
+  options: HitDTO;
+};
 
 /**
  * @class HitServices
@@ -104,13 +108,13 @@ export class HitServices {
   /** @public contructor */
   public constructor() {}
 
-  async all({ onlyHitsPinned, queries }: HitOptions) {
+  async all({ onlyPinned, queries }: HitOptions) {
     const { page, limit, sorting, q: queryString } = queries;
 
     // @TODO: Sorting, pagination and search by title/custom title.
     const { sort_by, order_by } = sorting;
 
-    const match: MatchOptions = onlyHitsPinned ? { allow_pinned: true } : {};
+    const match: MatchOptions = onlyPinned ? { allow_pinned: true } : {};
 
     if (queryString) {
       const queryStringRemovedSpaces = queryString.trim();
@@ -145,8 +149,8 @@ export class HitServices {
     };
   }
 
-  /** @method insert  */
-  async insert(options: HitDTO): Promise<{ hit: Hit }> {
+  /** @method create  */
+  async create(options: HitDTO): Promise<{ hit: Hit }> {
     const TOTAL_HITS_INITIAL = 0;
 
     const {
@@ -182,7 +186,46 @@ export class HitServices {
       updated_at: date,
     });
 
-    return { hit };
+    return {
+      hit,
+    };
+  }
+
+  /** @method update  */
+  async update({ private_hash, options }: HitUpdateOptions) {
+    const { title, description, website_name, website_url, ...other } = options;
+
+    const match = {
+      private_hash,
+    } as Hit;
+
+    const hitCollectionIn = await Hits.findOne(match);
+
+    const isNullableCollectionInstance = isNullable(hitCollectionIn);
+
+    if (isNullableCollectionInstance) {
+      throw new BadRequest(`Provided HTTP param ERROR: "${private_hash}"`);
+    }
+
+    // @TODO: Set: "updated_at" field
+    const updated_at = new Date();
+
+    const hitCollectionUpdated = await Hits.update(match, {
+      $set: {
+        title,
+        description,
+        website_name,
+        website_url,
+        ...other,
+        updated_at,
+      },
+    });
+
+    const { nModified: updated_count } = hitCollectionUpdated;
+
+    return {
+      updated_count,
+    };
   }
 
   async findByID(id: string) {
@@ -195,7 +238,9 @@ export class HitServices {
 
     const hit = await this.findByParams({ _id: id });
 
-    return { hit };
+    return {
+      hit,
+    };
   }
 
   async findByPrivateHash(hash: string) {
@@ -206,7 +251,9 @@ export class HitServices {
       setProtection: false,
     });
 
-    return { hit };
+    return {
+      hit,
+    };
   }
 
   /**

@@ -35,7 +35,7 @@ export class HitController {
       const services = new HitServices();
 
       const { hits, pagination: p } = await services.all({
-        onlyHitsPinned: true,
+        onlyPinned: true,
         queries: {
           page: toNumber(page, 1),
           limit: toNumber(limit, 10),
@@ -61,7 +61,7 @@ export class HitController {
 
   async findByID(request: Request, response: Response, next: NextFunction) {
     try {
-      // api/v1/hit/<ObjectID>
+      // Path: api/v1/hits/:id
       const { id } = request.params;
 
       const services = new HitServices();
@@ -74,12 +74,9 @@ export class HitController {
     }
   }
 
-  async findByPrivateHash(
-    request: Request,
-    response: Response,
-    next: NextFunction
-  ) {
+  async findByHash(request: Request, response: Response, next: NextFunction) {
     try {
+      // Path: api/v1/hit/hash/:hash ("private_hash")
       const { hash } = request.params;
 
       const services = new HitServices();
@@ -92,6 +89,7 @@ export class HitController {
     }
   }
 
+  /** @method create */
   async create(request: Request, response: Response, next: NextFunction) {
     try {
       // @TODO: Secure body
@@ -107,7 +105,7 @@ export class HitController {
 
       const services = new HitServices();
 
-      const { hit } = await services.insert({
+      const { hit } = await services.create({
         title,
         description,
         website_url,
@@ -123,8 +121,44 @@ export class HitController {
     }
   }
 
+  async update(request: Request, response: Response, next: NextFunction) {
+    try {
+      // Path: /api/v1/hits/:private_hash
+      const { private_hash } = request.params;
+
+      const {
+        title,
+        description,
+        website_name,
+        website_url,
+        allow_set,
+        allow_negative,
+        allow_pinned,
+      } = request.body;
+
+      const services = new HitServices();
+
+      const { updated_count } = await services.update({
+        private_hash,
+        options: {
+          title,
+          description,
+          website_name,
+          website_url,
+          allow_set,
+          allow_negative,
+          allow_pinned,
+        },
+      });
+
+      return response.json({ updated_count });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   /**
-   * Using: "public_hash"
+   * Use: "public_hash"
    */
   async up(request: Request, response: Response, next: NextFunction) {
     try {
@@ -155,7 +189,7 @@ export class HitController {
   }
 
   /**
-   * Using: "private_hash"
+   * Use: "private_hash"
    */
   async set(request: Request, response: Response, next: NextFunction) {
     try {
@@ -175,7 +209,7 @@ export class HitController {
 
   async delete(request: Request, response: Response, next: NextFunction) {
     try {
-      // @TODO: Delete: "/hits/:private_hash"
+      // Path: "/hits/:private_hash"
       const { private_hash } = request.params;
 
       const services = new HitServices();

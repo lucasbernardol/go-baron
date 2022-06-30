@@ -1,4 +1,5 @@
 import express, { Application } from 'express';
+import { errors } from 'celebrate';
 import cors from 'cors';
 
 import helmet from 'helmet';
@@ -77,6 +78,8 @@ class ExpressConfiguration {
      * Routes
      */
     this.express.use(routes);
+
+    this.express.use(errors());
 
     return this;
   }
