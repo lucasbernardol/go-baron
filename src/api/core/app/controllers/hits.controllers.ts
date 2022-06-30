@@ -1,8 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import { ServerResponse } from 'http';
-import { Server } from '../../../config/server.config';
 
+import { paginationSnakeCase } from '../../../../shared/utils/pagination.util';
 import { HitServices } from '../services/hits.services';
+
+type SortingQueries = {
+  sort_by: string;
+  order_by: string;
+};
+
+const toNumber = (value: any, defaultValue: number) =>
+  Number(value) || defaultValue;
 
 /**
  * @class HitControllers
@@ -12,14 +19,40 @@ export class HitController {
 
   async all(request: Request, response: Response, next: NextFunction) {
     try {
-      const services = new HitServices();
+      const { page, limit, sort = 'hits', order = 'desc' } = request.query;
+
+      const polluted_query = request.queryPolluted;
+
+      const hasPolluted = Object.keys(polluted_query).length >= 1;
+
+      // @TODO: Sorting
+      const sorting = {} as SortingQueries;
+
+      sorting['sort_by'] = sort as string;
+      sorting['order_by'] = order as string;
 
       // @TODO: all with "allow_pinned: true"
-      const { hits } = await services.all({
+      const services = new HitServices();
+
+      const { hits, pagination: p } = await services.all({
         onlyHitsPinned: true,
+        queries: {
+          page: toNumber(page, 1),
+          limit: toNumber(limit, 10),
+          sorting,
+        },
       });
 
-      return response.json(hits);
+      const pagination = paginationSnakeCase({ pagination: p });
+
+      // Object: "_metadata"
+      const _meta = {
+        pagination,
+        polluted_query: hasPolluted ? polluted_query : null,
+        sorting,
+      };
+
+      return response.json({ hits, _meta });
     } catch (error) {
       return next(error);
     }

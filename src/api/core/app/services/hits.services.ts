@@ -1,7 +1,7 @@
 import { BadRequest } from 'http-errors';
-import { isNull, isUndefined } from 'util';
-import { isObjectID } from '../../../../shared/utils/isObjectID.util';
+import { paginate } from 'paging-util';
 
+import { isObjectID } from '../../../../shared/utils/isObjectID.util';
 import { Hits, Hit } from '../../../data/connections/monk.connection';
 
 import { hash } from '../providers/publicHash.provider';
@@ -17,8 +17,19 @@ export type HitDTO = {
   allow_pinned?: boolean;
 };
 
+export type HitPagination = {
+  page: number | any;
+  limit?: number | any;
+  sorting?: {
+    /** collection field name  */
+    order_by: string;
+    sort_by: string;
+  };
+};
+
 export type HitOptions = {
   onlyHitsPinned?: boolean;
+  queries: HitPagination;
 };
 
 export type HitFindOptions = {
@@ -85,25 +96,39 @@ export class HitServices {
   /** @public contructor */
   public constructor() {}
 
-  async all({ onlyHitsPinned }: HitOptions = {}): Promise<{ hits: Hit[] }> {
+  async all(options: HitOptions) {
+    const { onlyHitsPinned, queries } = options;
+
+    const { page, limit, sorting } = queries;
+
     const allowCollectionFiledsToReturn = this.allowCollectionFields();
 
-    // @TODO: "allow_pinned": true
+    // @TODO: "allow_pinned": true. And pagination
     const filter = onlyHitsPinned ? { allow_pinned: true } : {};
+
+    const records = await Hits.count(filter);
+
+    const { offset, pagination } = paginate({ records, page, limit });
+
+    // @TODO: Pagination and Sorting.
+    const { sort_by, order_by = 'asc' } = sorting || {};
+
+    const order = order_by === 'desc' ? -1 : 1;
 
     const hitsPlainArray = await Hits.find(filter, {
       projection: allowCollectionFiledsToReturn,
+      limit: pagination.limit,
+      skip: offset,
       sort: {
-        created_at: -1,
+        [sort_by || 'hits']: order,
       },
     });
 
-    // @TODO: Normalid id
     const hits = hitsPlainArray.map(({ _id: id, ...fields }) => {
       return { id, ...fields };
     });
 
-    return { hits };
+    return { hits, pagination };
   }
 
   /** @method insert  */
