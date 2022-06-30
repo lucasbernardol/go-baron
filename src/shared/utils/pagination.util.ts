@@ -3,7 +3,7 @@ import { Output } from 'paging-util';
 export type PaginationOptions = Partial<Output>;
 
 /** @function paginationSnakeCase  */
-export function paginationSnakeCase({ pagination }: PaginationOptions) {
+export function paginationNormalize({ pagination }: PaginationOptions) {
   return {
     records: pagination.records,
     total_pages: pagination.totalPages,

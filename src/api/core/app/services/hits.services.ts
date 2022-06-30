@@ -2,6 +2,8 @@ import { BadRequest } from 'http-errors';
 import { paginate } from 'paging-util';
 
 import { isObjectID } from '../../../../shared/utils/isObjectID.util';
+import { likeRegexpOperator } from '../../../../shared/utils/regexp.utills';
+import { descAndAscToDecimal } from '../../../../shared/utils/sorting.util';
 import { Hits, Hit } from '../../../data/connections/monk.connection';
 
 import { hash } from '../providers/publicHash.provider';
@@ -17,9 +19,15 @@ export type HitDTO = {
   allow_pinned?: boolean;
 };
 
+type MatchOptions = {
+  allow_pinned?: boolean;
+  title?: any;
+};
+
 export type HitPagination = {
   page: number | any;
   limit?: number | any;
+  q?: string | any;
   sorting?: {
     /** collection field name  */
     order_by: string;
@@ -96,39 +104,45 @@ export class HitServices {
   /** @public contructor */
   public constructor() {}
 
-  async all(options: HitOptions) {
-    const { onlyHitsPinned, queries } = options;
+  async all({ onlyHitsPinned, queries }: HitOptions) {
+    const { page, limit, sorting, q: queryString } = queries;
 
-    const { page, limit, sorting } = queries;
+    // @TODO: Sorting, pagination and search by title/custom title.
+    const { sort_by, order_by } = sorting;
 
-    const allowCollectionFiledsToReturn = this.allowCollectionFields();
+    const match: MatchOptions = onlyHitsPinned ? { allow_pinned: true } : {};
 
-    // @TODO: "allow_pinned": true. And pagination
-    const filter = onlyHitsPinned ? { allow_pinned: true } : {};
+    if (queryString) {
+      const queryStringRemovedSpaces = queryString.trim();
 
-    const records = await Hits.count(filter);
+      const likeOperatorRegexp = likeRegexpOperator(queryStringRemovedSpaces);
+
+      match['title'] = likeOperatorRegexp;
+    }
+
+    // @TODO: Records/count database.
+    const records = await Hits.count(match);
 
     const { offset, pagination } = paginate({ records, page, limit });
 
-    // @TODO: Pagination and Sorting.
-    const { sort_by, order_by = 'asc' } = sorting || {};
+    // @TODO: All records.
+    const allowCollectionFiledsToReturn = this.allowCollectionFields();
 
-    const order = order_by === 'desc' ? -1 : 1;
-
-    const hitsPlainArray = await Hits.find(filter, {
+    const hitsArray = await Hits.find(match, {
       projection: allowCollectionFiledsToReturn,
       limit: pagination.limit,
       skip: offset,
       sort: {
-        [sort_by || 'hits']: order,
+        [sort_by]: descAndAscToDecimal(order_by),
       },
     });
 
-    const hits = hitsPlainArray.map(({ _id: id, ...fields }) => {
-      return { id, ...fields };
-    });
+    const hits = hitsArray.map(({ _id: id, ...fields }) => ({ id, ...fields }));
 
-    return { hits, pagination };
+    return {
+      hits,
+      pagination,
+    };
   }
 
   /** @method insert  */

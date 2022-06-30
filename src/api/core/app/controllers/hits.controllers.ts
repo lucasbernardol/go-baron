@@ -1,15 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { paginationSnakeCase } from '../../../../shared/utils/pagination.util';
+import { paginationNormalize } from '../../../../shared/utils/pagination.util';
+import { sortingUtil } from '../../../../shared/utils/sorting.util';
+import { toNumber } from '../../../../shared/utils/toNumber.util';
+
 import { HitServices } from '../services/hits.services';
 
-type SortingQueries = {
-  sort_by: string;
-  order_by: string;
+type AllRequestQueries = {
+  page: number;
+  limit: number;
+  sort: string;
+  order: string;
+  q: string;
 };
-
-const toNumber = (value: any, defaultValue: number) =>
-  Number(value) || defaultValue;
 
 /**
  * @class HitControllers
@@ -19,17 +22,14 @@ export class HitController {
 
   async all(request: Request, response: Response, next: NextFunction) {
     try {
-      const { page, limit, sort = 'hits', order = 'desc' } = request.query;
+      const { page, limit, sort, order, q } = request.query;
+
+      // @TODO: Pagination, Sorting, Math
+      const sorting = sortingUtil({ sort, order });
 
       const polluted_query = request.queryPolluted;
 
       const hasPolluted = Object.keys(polluted_query).length >= 1;
-
-      // @TODO: Sorting
-      const sorting = {} as SortingQueries;
-
-      sorting['sort_by'] = sort as string;
-      sorting['order_by'] = order as string;
 
       // @TODO: all with "allow_pinned: true"
       const services = new HitServices();
@@ -40,10 +40,11 @@ export class HitController {
           page: toNumber(page, 1),
           limit: toNumber(limit, 10),
           sorting,
+          q,
         },
       });
 
-      const pagination = paginationSnakeCase({ pagination: p });
+      const pagination = paginationNormalize({ pagination: p });
 
       // Object: "_metadata"
       const _meta = {
