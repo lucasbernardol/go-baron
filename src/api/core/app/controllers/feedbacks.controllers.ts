@@ -2,19 +2,43 @@ import { Request, Response, NextFunction } from 'express';
 
 import { FeedbackServices } from '../services/feedbacks.services';
 
+import { sortingUtil } from '../../../../shared/utils/sorting.util';
+import { toNumber } from '../../../../shared/utils/toNumber.util';
+
 /** @class  FeedbackController*/
 export class FeedbackController {
   public constructor() {}
 
   async all(request: Request, response: Response, next: NextFunction) {
     try {
+      const { page, limit, sort, order, q } = request.query;
+
+      // Query pulluted with "HPP".
+      const queryPolluted = request.queryPolluted;
+
+      const hasPolluted = Object.keys(queryPolluted).length >= 1;
+
+      const query_pulluted = hasPolluted ? queryPolluted : null;
+
+      // Sorting: "create_at" asc (1)
+      const sorting = sortingUtil({ sort, order }, 'created_at');
+
+      // Feedbacks
       const services = new FeedbackServices();
 
-      const { feedbacks } = await services.all({
+      const { feedbacks, pagination } = await services.all({
         onlyPinned: true, // "allow_pinned: true"
+        queries: {
+          page: toNumber(page, 1),
+          limit: toNumber(limit, 10),
+          sorting,
+          q: q as string,
+        },
       });
 
-      return response.json({ feedbacks });
+      const _meta = { pagination, sorting, query_pulluted };
+
+      return response.json({ feedbacks, _meta });
     } catch (error) {
       return next(error);
     }
@@ -91,7 +115,7 @@ export class FeedbackController {
 
       const { feedback } = await services.update({
         id,
-        feedback: {
+        options: {
           title,
           short_description,
           long_description,

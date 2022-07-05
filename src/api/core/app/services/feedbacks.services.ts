@@ -1,8 +1,13 @@
 import { BadRequest } from 'http-errors';
+import { paginate } from 'paging-util';
 
-import { Feedbacks, Feedback } from '../../../data/connections/monk.connection';
-import { isObjectID } from '../../../../shared/utils/isObjectID.util';
 import { url } from '../providers/gravatar.provider';
+import { Feedbacks, Feedback } from '../../../data/connections/monk.connection';
+
+import { likeRegexpOperator } from '../../../../shared/utils/regexp.utills';
+import { paginationNormalize } from '../../../../shared/utils/pagination.util';
+import { descAndAscToDecimal } from '../../../../shared/utils/sorting.util';
+import { isObjectID } from '../../../../shared/utils/isObjectID.util';
 
 type FeedbackDTO = {
   title: string;
@@ -16,14 +21,27 @@ type FeedbackDTO = {
   is_critical?: boolean;
 };
 
+type FilterOptions = {
+  allow_pinned?: boolean;
+  title?: RegExp | string;
+};
+
 type FeedbackOptions = {
   onlyPinned: boolean;
-  queries?: any;
+  queries: {
+    page: number;
+    limit: number;
+    q?: string;
+    sorting: {
+      sort_by: string;
+      order_by: string;
+    };
+  };
 };
 
 type FeedbackUpdateOptions = {
   id: string;
-  feedback: FeedbackDTO;
+  options: FeedbackDTO;
 };
 
 function normalize<T>(instance: T) {
@@ -40,7 +58,7 @@ function normalize<T>(instance: T) {
   return { id, ...fields } as Partial<T>;
 }
 
-/** @class  FeebackServices*/
+/** @class FeebackServices */
 export class FeedbackServices {
   private readonly fields: Array<keyof Feedback> = [
     'title',
@@ -56,7 +74,7 @@ export class FeedbackServices {
     'updated_at',
   ];
 
-  private collectionFields() {
+  private collectionFields(): object {
     const collectionFields = this.fields;
 
     return collectionFields.reduce((accumulator, field) => {
@@ -64,31 +82,57 @@ export class FeedbackServices {
     }, {});
   }
 
-  /** @public constructor */
+  /**
+   * @public constructor
+   **/
   public constructor() {}
 
   async all({ onlyPinned, queries }: FeedbackOptions) {
-    const collectionFields = this.collectionFields();
+    const { sorting, q: titleFilter, page, limit } = queries;
 
-    // filter
-    const match = onlyPinned ? { allow_pinned: true } : {};
+    const protection = this.collectionFields();
 
-    const collections = await Feedbacks.find(match, {
-      projection: collectionFields,
+    const filter: FilterOptions = onlyPinned ? { allow_pinned: true } : {};
+
+    if (titleFilter) {
+      const queryStrTrim = titleFilter.trim();
+
+      const titleRegexpFilter = likeRegexpOperator(queryStrTrim);
+
+      filter['title'] = titleRegexpFilter;
+    }
+
+    // All collections
+    const records = await Feedbacks.count(filter);
+
+    const { offset, pagination: P } = paginate({ records, page, limit });
+
+    // Sorting: {}
+    const { sort_by, order_by } = sorting;
+
+    // Return: [Feedback, ....]
+    const collections = await Feedbacks.find(filter, {
+      limit: P.limit,
+      skip: offset,
+      sort: {
+        [sort_by]: descAndAscToDecimal(order_by), // -1 OR 1
+      },
+      projection: protection,
     });
 
+    // Return: [{ id: 'fa58...', ... }]
     const feedbacks = collections.map(({ _id: id, ...fields }) => {
       const { allow_gravatar, public_email, avatar_url: avatar } = fields;
 
-      const avatar_url = allow_gravatar
-        ? url(public_email, { d: 'retro' })
-        : avatar;
+      const avatar_url = allow_gravatar ? url(public_email) : avatar;
 
-      // Example: { id: "af525...", ... }
       return { id, ...fields, avatar_url };
     });
 
-    return { feedbacks };
+    // Use: "snake_case"
+    const pagination = paginationNormalize({ pagination: P });
+
+    return { feedbacks, pagination };
   }
 
   async findByPk(id: string) {
@@ -100,18 +144,11 @@ export class FeedbackServices {
       throw new BadRequest(`Provided HTTP param ERROR: "${id}"`);
     }
 
-    const collection = await Feedbacks.findOne({ _id: id });
+    const collection = await Feedbacks.findOne({
+      _id: id,
+    });
 
-    /**  @TODO: Add "avatar_url" */
     const feedback = collection ? normalize(collection) : null;
-
-    if (feedback) {
-      const { allow_gravatar, public_email, avatar_url: avatar } = feedback;
-
-      const avatar_url = allow_gravatar ? url(public_email) : avatar;
-
-      feedback['avatar_url'] = avatar_url;
-    }
 
     return { feedback };
   }
@@ -124,21 +161,24 @@ export class FeedbackServices {
     public_email,
     author_name,
     github_username,
-    allow_pinned = true,
-    allow_gravatar = true,
-    is_critical = false,
+    allow_pinned,
+    allow_gravatar,
+    is_critical,
   }: FeedbackDTO) {
+    // @TODO: Save current image
+    const avatar_url = allow_gravatar ? url(public_email) : null;
+
     // @TODO: Create "feedback" && add timestamps
     const timestamp = new Date();
 
-    const feedbackCollection = await Feedbacks.insert({
+    const collection = await Feedbacks.insert({
       title,
       short_description,
       long_description,
       author_name,
       public_email,
       github_username,
-      avatar_url: null,
+      avatar_url,
       allow_gravatar,
       allow_pinned,
       is_critical,
@@ -146,12 +186,12 @@ export class FeedbackServices {
       updated_at: timestamp,
     });
 
-    const feedback = normalize(feedbackCollection);
+    const feedback = normalize(collection);
 
     return { feedback };
   }
 
-  async update({ id, feedback }: FeedbackUpdateOptions) {
+  async update({ id, options }: FeedbackUpdateOptions) {
     const {
       title,
       long_description,
@@ -162,14 +202,14 @@ export class FeedbackServices {
       allow_pinned,
       allow_gravatar,
       is_critical,
-    } = feedback;
+    } = options;
+
+    /** @TODO: Add "avatar_url" field */
+    const avatar_url = allow_gravatar ? url(public_email) : null;
 
     const collectionFilter = {
       _id: id,
     } as Feedback;
-
-    /** @TODO: Add "updated_at" field */
-    const updated_at = new Date();
 
     const collection = await Feedbacks.findOneAndUpdate(collectionFilter, {
       $set: {
@@ -179,18 +219,17 @@ export class FeedbackServices {
         author_name,
         public_email,
         github_username,
+        avatar_url,
         allow_pinned,
         allow_gravatar,
         is_critical,
-        updated_at,
+        updated_at: new Date(),
       },
     });
 
-    const collectionUpdated = normalize(collection) ?? null;
+    const feedback = collection ? normalize(collection) : null;
 
-    return {
-      feedback: collectionUpdated,
-    };
+    return { feedback };
   }
 
   /** @method delete */

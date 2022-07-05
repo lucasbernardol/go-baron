@@ -11,8 +11,11 @@ type SortingOutput = {
 };
 
 /** @function sortingUtil */
-export function sortingUtil(options: SortingOptions = {}) {
-  const { sort = 'hits', order = 'asc' } = options;
+export function sortingUtil(
+  options: SortingOptions = {},
+  defualtSort?: string
+) {
+  const { sort = defualtSort || 'hits', order = 'asc' } = options;
 
   const sorting: SortingOutput = {
     // Fields: "hits", "created_at", "updated_at", etc.
