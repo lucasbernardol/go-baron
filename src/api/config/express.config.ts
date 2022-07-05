@@ -2,6 +2,8 @@ import express, { Application } from 'express';
 import { errors } from 'celebrate';
 import cors from 'cors';
 
+import compression from 'compression';
+
 import helmet from 'helmet';
 import hpp from 'hpp';
 
@@ -47,6 +49,8 @@ class ExpressConfiguration {
 
   public connect() {
     /** middlewares */
+    this.express.use(compression());
+
     this.express.use(express.json());
     this.express.use(express.urlencoded({ extended: false }));
 

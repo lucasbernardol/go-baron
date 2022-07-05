@@ -41,8 +41,11 @@ export class FeedbackController {
         title,
         short_description,
         long_description,
+        author_name,
         public_email,
         github_username,
+        allow_gravatar,
+        allow_pinned,
         is_critical,
       } = request.body;
 
@@ -52,9 +55,53 @@ export class FeedbackController {
         title,
         short_description,
         long_description,
+        author_name,
         public_email,
         github_username,
+        allow_gravatar,
+        allow_pinned,
         is_critical,
+      });
+
+      return response.json(feedback);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /** @method update */
+  async update(request: Request, response: Response, next: NextFunction) {
+    try {
+      // Path: "/api/v1/feedbacks/:id"
+      const { id } = request.params;
+
+      const {
+        title,
+        short_description,
+        long_description,
+        author_name,
+        public_email,
+        github_username,
+        allow_gravatar,
+        allow_pinned,
+        is_critical,
+      } = request.body;
+
+      const services = new FeedbackServices();
+
+      const { feedback } = await services.update({
+        id,
+        feedback: {
+          title,
+          short_description,
+          long_description,
+          author_name,
+          public_email,
+          github_username,
+          allow_gravatar,
+          allow_pinned,
+          is_critical,
+        },
       });
 
       return response.json(feedback);

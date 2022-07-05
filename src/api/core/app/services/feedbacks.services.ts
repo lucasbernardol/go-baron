@@ -2,20 +2,28 @@ import { BadRequest } from 'http-errors';
 
 import { Feedbacks, Feedback } from '../../../data/connections/monk.connection';
 import { isObjectID } from '../../../../shared/utils/isObjectID.util';
+import { url } from '../providers/gravatar.provider';
 
 type FeedbackDTO = {
   title: string;
   short_description?: string;
   long_description: string;
+  author_name: string;
   public_email: string;
   github_username: string;
-  is_critical?: boolean;
   allow_pinned?: boolean;
+  allow_gravatar?: boolean;
+  is_critical?: boolean;
 };
 
 type FeedbackOptions = {
   onlyPinned: boolean;
   queries?: any;
+};
+
+type FeedbackUpdateOptions = {
+  id: string;
+  feedback: FeedbackDTO;
 };
 
 function normalize<T>(instance: T) {
@@ -38,8 +46,11 @@ export class FeedbackServices {
     'title',
     'short_description',
     'long_description',
+    'author_name',
     'public_email',
     'github_username',
+    'avatar_url',
+    'allow_gravatar',
     'is_critical',
     'created_at',
     'updated_at',
@@ -57,43 +68,52 @@ export class FeedbackServices {
   public constructor() {}
 
   async all({ onlyPinned, queries }: FeedbackOptions) {
-    // fields
-    const collectionProtectionFields = this.collectionFields();
+    const collectionFields = this.collectionFields();
 
+    // filter
     const match = onlyPinned ? { allow_pinned: true } : {};
 
-    const feedbackCollections = await Feedbacks.find(match, {
-      projection: collectionProtectionFields,
+    const collections = await Feedbacks.find(match, {
+      projection: collectionFields,
     });
 
-    const feedbacks = feedbackCollections.map(({ _id: id, ...fields }) => {
+    const feedbacks = collections.map(({ _id: id, ...fields }) => {
+      const { allow_gravatar, public_email, avatar_url: avatar } = fields;
+
+      const avatar_url = allow_gravatar
+        ? url(public_email, { d: 'retro' })
+        : avatar;
+
       // Example: { id: "af525...", ... }
-      return { id, ...fields };
+      return { id, ...fields, avatar_url };
     });
 
-    return {
-      feedbacks,
-    };
+    return { feedbacks };
   }
 
-  async findByPk(primaryKey: string) {
-    const isPrimaryKeyParam = isObjectID(primaryKey);
+  async findByPk(id: string) {
+    const isPrimaryKeyParam = isObjectID(id);
 
     const isNotPrimaryKey = !isPrimaryKeyParam;
 
     if (isNotPrimaryKey) {
-      throw new BadRequest(`Provided HTTP param ERROR: "${primaryKey}"`);
+      throw new BadRequest(`Provided HTTP param ERROR: "${id}"`);
     }
 
-    const feedbackCollection = await Feedbacks.findOne({
-      _id: primaryKey,
-    });
+    const collection = await Feedbacks.findOne({ _id: id });
 
-    const feedback = feedbackCollection ? normalize(feedbackCollection) : null;
+    /**  @TODO: Add "avatar_url" */
+    const feedback = collection ? normalize(collection) : null;
 
-    return {
-      feedback,
-    };
+    if (feedback) {
+      const { allow_gravatar, public_email, avatar_url: avatar } = feedback;
+
+      const avatar_url = allow_gravatar ? url(public_email) : avatar;
+
+      feedback['avatar_url'] = avatar_url;
+    }
+
+    return { feedback };
   }
 
   /** @method create */
@@ -102,9 +122,11 @@ export class FeedbackServices {
     short_description,
     long_description,
     public_email,
+    author_name,
     github_username,
-    is_critical = false,
     allow_pinned = true,
+    allow_gravatar = true,
+    is_critical = false,
   }: FeedbackDTO) {
     // @TODO: Create "feedback" && add timestamps
     const timestamp = new Date();
@@ -113,22 +135,63 @@ export class FeedbackServices {
       title,
       short_description,
       long_description,
+      author_name,
       public_email,
       github_username,
-      is_critical,
+      avatar_url: null,
+      allow_gravatar,
       allow_pinned,
+      is_critical,
       created_at: timestamp,
       updated_at: timestamp,
     });
 
     const feedback = normalize(feedbackCollection);
 
-    return {
-      feedback,
-    };
+    return { feedback };
   }
 
-  async update() {}
+  async update({ id, feedback }: FeedbackUpdateOptions) {
+    const {
+      title,
+      long_description,
+      short_description,
+      author_name,
+      public_email,
+      github_username,
+      allow_pinned,
+      allow_gravatar,
+      is_critical,
+    } = feedback;
+
+    const collectionFilter = {
+      _id: id,
+    } as Feedback;
+
+    /** @TODO: Add "updated_at" field */
+    const updated_at = new Date();
+
+    const collection = await Feedbacks.findOneAndUpdate(collectionFilter, {
+      $set: {
+        title,
+        long_description,
+        short_description,
+        author_name,
+        public_email,
+        github_username,
+        allow_pinned,
+        allow_gravatar,
+        is_critical,
+        updated_at,
+      },
+    });
+
+    const collectionUpdated = normalize(collection) ?? null;
+
+    return {
+      feedback: collectionUpdated,
+    };
+  }
 
   /** @method delete */
   async delete(id: string) {

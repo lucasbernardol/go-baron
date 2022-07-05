@@ -12,10 +12,13 @@ export type Feedback = {
   title: string;
   short_description?: string;
   long_description: string;
+  author_name: string;
   public_email: string;
   github_username: string;
-  is_critical?: boolean;
+  avatar_url?: string;
   allow_pinned?: boolean;
+  allow_gravatar?: boolean;
+  is_critical?: boolean;
   created_at: Date;
   updated_at: Date;
 };
