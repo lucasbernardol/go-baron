@@ -1,0 +1,288 @@
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  z-index: 999;
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  min-height: 100%;
+
+  background-color: rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.modal__content {
+  overflow-y: scroll;
+  position: relative;
+
+  width: 100%;
+  max-width: 68rem; /** 680px */
+  height: 60rem;
+
+  margin: 1.5rem;
+  padding: 3.5rem;
+
+  background-color: var(--color-background);
+
+  border-radius: 0.8rem;
+  animation: down 0.8s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+
+.modal__content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal__content::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 2px var(--color-primary);
+  border-radius: 4px;
+}
+
+.modal__content::-webkit-scrollbar-thumb {
+  background: var(--color-line-light);
+  border-radius: 4px;
+}
+
+.modal__title {
+  display: block;
+  width: 100%;
+
+  font-size: 3.2rem;
+  font-weight: bold;
+
+  line-height: 1.4;
+  text-align: left;
+
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-line-light);
+}
+
+.modal__fields {
+  width: 100%;
+  padding: 2rem;
+
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 1.6rem;
+  font-weight: 600;
+
+  line-height: 1.2;
+  margin-bottom: 1.2rem;
+}
+
+label small {
+  display: block;
+
+  font-size: 1.3rem;
+  font-weight: normal;
+
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+input.modal__input,
+textarea.modal__textarea {
+  width: 100%;
+  padding: 1.2rem;
+
+  font-size: 1.6rem;
+
+  color: var(--color-text);
+  background-color: var(--color-dark);
+
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-dark);
+
+  transition: 0.8s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+input.modal__input:focus,
+textarea.modal__textarea:focus {
+  border-color: var(--color-primary-hover);
+}
+
+.fields__inline {
+  display: flex;
+
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.fields__inline.top {
+  margin-top: 2rem;
+}
+
+.fields__inline > div {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: left;
+  justify-content: center;
+}
+
+.fields__inline > div:first-child {
+  margin-right: 2rem;
+}
+
+/** Textarea */
+.modal__area {
+  width: 100%;
+
+  margin-top: 2rem;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: left;
+}
+
+textarea.short-description {
+  height: 5rem; /* 64px */
+
+  resize: none;
+}
+
+textarea.long-description {
+  height: 10rem; /* 64px */
+
+  resize: vertical;
+}
+
+/** Checkbox */
+
+.modal__selection {
+  width: 100%;
+  margin-top: 2.8rem;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: left;
+  justify-content: center;
+}
+
+.modal__selection span {
+  font-size: 1.6rem;
+  font-weight: 600;
+
+  color: var(--color-text);
+  margin-bottom: 1.8rem;
+}
+
+.selection {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+}
+
+.modal__check {
+  flex: 1;
+
+  height: 6.4rem;
+  margin-right: 1.8rem;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid var(--color-primary);
+  border-radius: 0.5rem;
+
+  opacity: 0.4;
+  transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.modal__check:last-child {
+  margin: 0;
+}
+
+.modal__check:hover {
+  opacity: 1;
+}
+
+label.check {
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  cursor: pointer;
+}
+
+[id='critical']:checked ~ .critical {
+  opacity: 1;
+}
+
+[id='pinned']:checked ~ .pinned {
+  opacity: 1;
+}
+
+[id='gravatar']:checked ~ .gravatar {
+  opacity: 1;
+}
+
+.feedback-button {
+  margin: 2rem 1.6rem;
+  padding: 1.4rem;
+
+  background-color: var(--color-primary);
+  border-radius: 0.5rem;
+
+  transition: 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.feedback-button:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.close-modal {
+  position: absolute;
+  top: 3.5rem;
+  right: 3.5rem;
+
+  width: 3.6rem;
+  height: 3.6rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: transparent;
+  border-radius: 50%;
+
+  transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.close-modal:hover {
+  opacity: 0.7;
+}
+
+.close-modal img {
+  width: 2.8rem;
+  height: 2.8rem;
+
+  pointer-events: none;
+}

@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/styles/animations/animations.styles.css" />
 
     <link rel="stylesheet" href="/styles/components/spinner.styles.css" />
+    <link rel="stylesheet" href="/styles/components/modal.styles.css" />
     <link rel="stylesheet" href="/styles/pages/home.styles.css" />
 
     <script defer src="/scripts/home.scripts.js"></script>
@@ -45,5 +46,8 @@
 
     <!-- Github floating button/anchor -->
     <%- include('./partials/github.partial.ejs'); %>
+
+    <!-- Feedback modal -->
+    <%- include('./partials/modal.partial.ejs', { visible: true }); %>
   </body>
 </html>

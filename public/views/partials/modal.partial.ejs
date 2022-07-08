@@ -1,0 +1,151 @@
+<div class="modal <%= visible ? '' : 'hidden'%>" data-id="modal">
+  <section class="modal__content">
+    <h2 class="screen-reader">
+      Nos conte sua experiência usando nossos serviços.
+    </h2>
+
+    <form action="/" method="post" data-id="form">
+      <fieldset class="modal__fieldset">
+        <legend class="modal__title">Feedback</legend>
+
+        <div class="modal__fields">
+          <div class="fields__inline">
+            <div class="title">
+              <label for="title">
+                Título <br />
+                <small>Usamos nas nossas pesquisas</small>
+              </label>
+
+              <input
+                id="title"
+                class="modal__input"
+                type="text"
+                name="title"
+                autofocus
+                placeholder="Digite o título.."
+                maxlength="80"
+                minlength="5"
+                required
+              />
+            </div>
+
+            <div class="author">
+              <label for="author">Autor</label>
+
+              <input
+                id="author"
+                type="text"
+                name="author_name"
+                class="modal__input"
+                placeholder="Exemplo: Lucas, Douglas..."
+                maxlength="64"
+                minlength="3"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="modal__area">
+            <label for="short-description">Descrição (opicional)</label>
+
+            <textarea
+              id="short-description"
+              class="modal__textarea short-description"
+              name="short_description"
+              maxlength="100"
+              minlength="5"
+              placeholder="Descrição curta..."
+            ></textarea>
+          </div>
+
+          <div class="modal__area">
+            <label for="long-description">Descrição minuciosa</label>
+
+            <textarea
+              id="long-description"
+              class="modal__textarea long-description"
+              name="long_description"
+              placeholder="Descrição curta!"
+              maxlength="255"
+              minlength="5"
+              required
+            ></textarea>
+          </div>
+
+          <div class="fields__inline top">
+            <div class="email">
+              <label for="email">
+                Endereço de e-mail púlico <br />
+                <small> Usamos para acessar seu perfil Gravatar. </small>
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                name="public_email"
+                class="modal__input"
+                placeholder="Endereço de e-mail"
+                maxlength="255"
+                minlength="8"
+                required
+              />
+            </div>
+
+            <div class="github">
+              <label for="github">Usuário github</label>
+
+              <input
+                id="github"
+                type="text"
+                name="github_username"
+                class="modal__input"
+                placeholder="Nome de usuário: lucasbernardol..."
+                maxlength="64"
+                minlength="3"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="modal__selection">
+            <span>Ative as opções necessárias</span>
+
+            <div class="selection" data-id="section">
+              <!-- prettier-ignore -->
+              <input type="checkbox" name="allow_gravatar" id="gravatar" checked hidden />
+              <input type="checkbox" name="allow_pinned" id="pinned" hidden />
+              <input type="checkbox" name="is_critical" id="critical" hidden />
+
+              <div class="modal__check gravatar">
+                <label class="check" for="gravatar">
+                  Ativar <br />
+                  Gravatar
+                </label>
+              </div>
+
+              <div class="modal__check pinned">
+                <label class="check" for="pinned">
+                  Visualização <br />
+                  Pública
+                </label>
+              </div>
+
+              <div class="modal__check critical">
+                <label class="check" for="critical">
+                  Problema <br />
+                  interno
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="feedback-button">Enviar Feedback</button>
+      </fieldset>
+    </form>
+
+    <button class="close-modal" title="Sair" type="button">
+      <img src="/assets/close.svg" alt="Alt close icon" />
+    </button>
+  </section>
+</div>
