@@ -6,7 +6,6 @@ import compression from 'compression';
 
 import helmet from 'helmet';
 import hpp from 'hpp';
-
 import morgan from 'morgan';
 
 import {
@@ -32,6 +31,7 @@ class ExpressConfiguration {
     return this.instance;
   }
 
+  /** @private constructor */
   private constructor() {}
 
   /**
@@ -47,7 +47,7 @@ class ExpressConfiguration {
     return this;
   }
 
-  public connect() {
+  public connect(): ExpressConfiguration {
     /** middlewares */
     this.express.use(compression());
 
@@ -64,19 +64,14 @@ class ExpressConfiguration {
 
     this.express.use(hpp());
 
+    /** Static files */
+    this.staticFolderAndViewsEngine();
+
     /**
      * - Morgan
      * HTTP request logger.
      */
     this.express.use(morgan('dev'));
-
-    this.express.use(express.static(STATIC_DIRECTORY));
-
-    /**
-     * - Client/static files
-     */
-    this.express.set('view engine', 'ejs');
-    this.express.set('views', VIEWS_DIRECTORY);
 
     /**
      * Routes
@@ -86,6 +81,15 @@ class ExpressConfiguration {
     this.express.use(errors());
 
     return this;
+  }
+
+  /** @method staticFolderAndViewsEngine */
+  private staticFolderAndViewsEngine(): void {
+    this.express.use(express.static(STATIC_DIRECTORY));
+
+    /** Client/static files */
+    this.express.set('view engine', 'ejs');
+    this.express.set('views', VIEWS_DIRECTORY);
   }
 }
 

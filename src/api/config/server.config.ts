@@ -4,21 +4,21 @@ import { Application } from 'express';
 
 import { isFunction } from '../../shared/utils/isFunction.util';
 
-interface CallbackOptions {
+type CallbackOptions = {
   port: number;
   at?: number;
-}
+};
 
 export type ServerListenCallback = (options: CallbackOptions) => void;
 
-export interface ServerInitOptions {
+export type ServerInitOptions = {
   allowNativeHTTPServer?: boolean;
-}
+};
 
-export interface ServerListenOptions {
+export type ServerListenOptions = {
   port?: number;
   serverListenCallback?: ServerListenCallback;
-}
+};
 
 export class ServerConfiguration {
   private static instance: ServerConfiguration;
