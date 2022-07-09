@@ -86,8 +86,6 @@
 
 .public-text a {
   color: var(--color-primary);
-  text-transform: uppercase;
-
   padding: 0.8rem 0.2rem;
 }
 
@@ -96,40 +94,4 @@
   font-weight: bold;
 
   text-decoration: underline;
-}
-
-.github-floating {
-  position: fixed;
-
-  right: 4rem;
-  bottom: 4rem;
-
-  width: 6.4rem;
-  height: 6.4rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background-color: var(--color-dark);
-  box-shadow: 5px 5px 5px -2px rgba(0, 0, 0, 0.5);
-
-  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.github-floating__icon {
-  width: 3.2rem;
-  height: 3.2rem;
-
-  opacity: 0.8;
-}
-
-.github-floating:hover {
-  transform: scale(1.1);
-}
-
-.github-floating:hover .github-floating__icon {
-  opacity: 1;
 }

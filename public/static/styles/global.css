@@ -16,6 +16,7 @@
   --color-line-light: rgba(37, 37, 41, 0.6);
 
   --color-checked: rgb(7, 129, 7);
+  --color-bug: rgb(212, 58, 58);
 
   font-size: 62.5%;
 }
@@ -70,6 +71,11 @@ body {
 img {
   pointer-events: none;
   user-select: none;
+
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
 }
 
 .screen-reader {
@@ -84,5 +90,4 @@ img {
   height: 0;
 
   color: none;
-  font-size: 0px;
 }

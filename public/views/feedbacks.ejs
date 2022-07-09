@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" translate="yes">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=7" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6e3cbc" />
+    <meta name="msapplication-navbutton-color" content="#6e3cbc" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#6e3cbc" />
+
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/animations/animations.styles.css" />
+    <link rel="stylesheet" href="/styles/components/spinner.styles.css" />
+    <link
+      rel="stylesheet"
+      href="/styles/components/fullscreen-loader.styles.css"
+    />
+    <link rel="stylesheet" href="/styles/pages/feedbacks.styles.css" />
+
+    <script defer src="/scripts/feedbacks.scripts.js"></script>
+
+    <title>Go Baron | Expreriências</title>
+  </head>
+  <body>
+    <div class="application-wrapper">
+      <main class="main">
+        <section class="feedbacks">
+          <h2 class="screen-reader">
+            Nesta página você encontra as experiências de uso mais recentes.
+            Faça sua colabolação.
+          </h2>
+
+          <header class="feedbacks__header">
+            <h1 class="feedbacks__title">Últimas | Expreriências</h1>
+
+            <a href="/" class="feedback__to-home" title="Voltar ao início">
+              <img
+                src="/assets/arrow-right-white.svg"
+                alt="Arrow icon/Voltar ao início"
+              />
+              <span>Voltar a início</span>
+            </a>
+          </header>
+
+          <div class="feedbacks__list" data-id="feedbacks-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- prettier-ignore -->
+    <%- include('./partials/fullscreen-loader.partial.ejs', { visible: true }); %>
+  </body>
+</html>

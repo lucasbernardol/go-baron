@@ -12,12 +12,19 @@
 
     <link rel="stylesheet" href="/styles/global.css" />
     <link rel="stylesheet" href="/styles/animations/animations.styles.css" />
-
     <link rel="stylesheet" href="/styles/components/spinner.styles.css" />
-    <link rel="stylesheet" href="/styles/components/modal.styles.css" />
+    <link
+      rel="stylesheet"
+      href="/styles/components/feedback-modal.styles.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/styles/components/floating-button.styles.css"
+    />
+    <link rel="stylesheet" href="/styles/components/tooltip-modal.styles.css" />
     <link rel="stylesheet" href="/styles/pages/home.styles.css" />
 
-    <script defer src="/scripts/home.scripts.js"></script>
+    <script defer type="module" src="/scripts/home.scripts.js"></script>
 
     <title>Go Baron | HOME</title>
   </head>
@@ -27,27 +34,28 @@
         <div class="views">
           <img class="views__icon" src="/assets/public-icon.svg" />
           <output class="views__output hidden" data-id="output">200</output>
-
-          <!-- Loader/spinner -->
-          <%- include('partials/spinner.partial.ejs', { visible: true }); %>
+          <div class="spinner" data-id="spinner"></div>
 
           <span class="views__text">
             Você pode modificar as <br />
-            visualizações atualizando (F5) a página.
+            visualizações atualizando a página.
           </span>
         </div>
 
         <span class="public-text">
-          Acesse a API através da URL:
-          <a target="_blank" href="/api/v1/hits">/api</a>
+          Conheça as expreriências de uso:
+          <a href="/feedbacks">/feedbacks</a>
         </span>
       </main>
     </div>
 
     <!-- Github floating button/anchor -->
-    <%- include('./partials/github.partial.ejs'); %>
+    <%- include('./partials/floating-button.partial.ejs'); %>
 
-    <!-- Feedback modal -->
-    <%- include('./partials/modal.partial.ejs', { visible: true }); %>
+    <!-- Tooltip modal/component -->
+    <%- include('./partials/tooltip-modal.partial.ejs', { visible: false }); %>
+
+    <!-- Feedback modal/component -->
+    <%- include('./partials/feedback-modal.partial.ejs', { visible: false }); %>
   </body>
 </html>

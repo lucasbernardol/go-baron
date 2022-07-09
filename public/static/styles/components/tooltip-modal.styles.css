@@ -1,0 +1,30 @@
+.tooltip.hidden {
+  display: none;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 99;
+
+  left: 3rem;
+  bottom: 5rem;
+
+  padding: 1.6rem 2.5rem;
+  border-radius: 0.8rem;
+
+  background-color: var(--color-dark);
+  box-shadow: 5px 5px 10px -2px rgba(0, 0, 0, 0.5);
+
+  animation: left 0.8s ease-out;
+}
+
+.tooltip__text {
+  font-size: 1.7rem;
+  color: var(--color-text);
+
+  line-height: 1.4;
+}
+
+.tooltip__text strong {
+  text-transform: uppercase;
+}

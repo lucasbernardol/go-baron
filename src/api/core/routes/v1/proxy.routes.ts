@@ -15,6 +15,11 @@ const controller = new MainController();
 routes.get('/', controller.home);
 
 /**
+ * @route "/"
+ */
+routes.get('/feedbacks', controller.feedbacks);
+
+/**
  * @route "/api/v1/hits"
  */
 routes.use('/api/v1', HitRouter);

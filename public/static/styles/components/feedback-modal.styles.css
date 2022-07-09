@@ -276,6 +276,10 @@ label.check {
   transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+.close-modal:disabled {
+  opacity: 0.3;
+}
+
 .close-modal:hover {
   opacity: 0.7;
 }

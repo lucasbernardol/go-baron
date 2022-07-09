@@ -24,7 +24,7 @@
                 autofocus
                 placeholder="Digite o título.."
                 maxlength="80"
-                minlength="5"
+                minlength="8"
                 required
               />
             </div>
@@ -39,7 +39,7 @@
                 class="modal__input"
                 placeholder="Exemplo: Lucas, Douglas..."
                 maxlength="64"
-                minlength="3"
+                minlength="5"
                 required
               />
             </div>
@@ -67,7 +67,7 @@
               name="long_description"
               placeholder="Descrição curta!"
               maxlength="255"
-              minlength="5"
+              minlength="16"
               required
             ></textarea>
           </div>
@@ -101,7 +101,7 @@
                 class="modal__input"
                 placeholder="Nome de usuário: lucasbernardol..."
                 maxlength="64"
-                minlength="3"
+                minlength="5"
                 required
               />
             </div>
@@ -113,7 +113,8 @@
             <div class="selection" data-id="section">
               <!-- prettier-ignore -->
               <input type="checkbox" name="allow_gravatar" id="gravatar" checked hidden />
-              <input type="checkbox" name="allow_pinned" id="pinned" hidden />
+              <!-- prettier-ignore -->
+              <input type="checkbox" name="allow_pinned" id="pinned" checked hidden />
               <input type="checkbox" name="is_critical" id="critical" hidden />
 
               <div class="modal__check gravatar">
@@ -144,7 +145,12 @@
       </fieldset>
     </form>
 
-    <button class="close-modal" title="Sair" type="button">
+    <button
+      type="button"
+      class="close-modal"
+      title="Sair"
+      data-id="modal-close"
+    >
       <img src="/assets/close.svg" alt="Alt close icon" />
     </button>
   </section>
