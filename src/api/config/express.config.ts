@@ -13,6 +13,9 @@ import {
   STATIC_DIRECTORY,
 } from '../../shared/constants/path.constants';
 
+import { compressionFilter } from '../core/middlewares/compression.middleware';
+import { mw } from '../core/middlewares/celebrate.middleware';
+
 import { routes } from '../core/routes/v1/proxy.routes';
 
 class ExpressConfiguration {
@@ -49,7 +52,11 @@ class ExpressConfiguration {
 
   public connect(): ExpressConfiguration {
     /** middlewares */
-    this.express.use(compression());
+    this.express.use(
+      compression({
+        filter: compressionFilter(),
+      })
+    );
 
     this.express.use(express.json());
     this.express.use(express.urlencoded({ extended: false }));
@@ -77,6 +84,8 @@ class ExpressConfiguration {
      * Routes
      */
     this.express.use(routes);
+
+    this.express.use(mw.mw());
 
     this.express.use(errors());
 
