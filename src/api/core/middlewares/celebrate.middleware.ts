@@ -1,90 +1,149 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { isCelebrateError, CelebrateError } from 'celebrate';
-import { Context, ValidationErrorItem } from 'joi';
+import { Context, ValidationErrorItem, ValidationError } from 'joi';
 
-type Err = CelebrateError | Error;
+type MiddlewareError = CelebrateError | Error;
+
+type Options = {
+  status?: number;
+  toData?: boolean;
+  toDetails?: boolean;
+  toSegment?: boolean;
+};
 
 type CelebrateDetails = {
-  keys: string;
+  key: string;
   type: string;
   message: string;
   context: Context;
 };
 
-/** @class CelebrateGuardMiddleware */
-export class CelebrateGuardMiddleware {
-  constructor() {}
+/** Util */
+const parse = (to: Partial<Options>, obj: Options) => Object.assign(to, obj);
 
-  public normalize(
-    detailsErrorItems: ValidationErrorItem[]
-  ): CelebrateDetails[] {
-    const JOI_ERROR_DETAILS_JOIN = ',';
+/** @class CelebrateValidation */
+class CelebrateValidation {
+  private static instance: CelebrateValidation;
 
-    const JOI_ERROR_TYPE_SEPARATOR = '.';
+  private readonly TARGET_OPTIONS = {
+    status: 400,
+    toDetails: true,
+    toSegment: true,
+    toData: true,
+  };
 
-    const details = detailsErrorItems.map((error) => {
-      const typePartsArray = error.type.split(JOI_ERROR_TYPE_SEPARATOR);
+  /** @private contructor */
+  private constructor() {}
 
-      const type = typePartsArray[typePartsArray.length - 1]; // last string
+  static getInstance(): CelebrateValidation {
+    const celebrateInstanceDoesNotExists = !this.instance;
 
-      // ['title', 'name', ...] => 'title,name',
-      const keys = error.path.join(JOI_ERROR_DETAILS_JOIN);
+    if (celebrateInstanceDoesNotExists) {
+      this.instance = new CelebrateValidation();
+    }
 
-      return {
-        keys,
-        type,
-        message: error.message,
-        context: {
-          key: error.context.key,
-          label: error.context?.label,
-          value: error.context.value ?? null,
-        },
-      };
-    });
-
-    return details;
+    return this.instance;
   }
 
-  public mw() {
-    return (error: Err, _: Request, response: Response, next: NextFunction) => {
-      // Celebrate/validation ERROR.
+  /**
+   * - mw
+   * @description A custom `celebrate` validation middleware with `Joi`.
+   */
+  public mw(options: Options = {}) {
+    const target = this.TARGET_OPTIONS;
+
+    const { status, toDetails, toSegment, toData } = parse(target, options);
+
+    function normalization(
+      JoiDetails: ValidationErrorItem[]
+    ): CelebrateDetails[] {
+      const JOI_ERROR_DETAILS_JOIN = ',';
+
+      return JoiDetails.map(({ context, path, message, type }) => {
+        const key = path.join(JOI_ERROR_DETAILS_JOIN);
+
+        return {
+          key,
+          type: type.toUpperCase(),
+          message,
+          context: {
+            key: context.key,
+            label: context.label,
+            value: context.value ?? null,
+          },
+        };
+      });
+    }
+
+    /** @function menipulate */
+    function menipulate(options: ValidationError, segment: string) {
+      const { name, message, details: JoiDetails, _original } = options;
+
+      const details = toDetails ? normalization(JoiDetails) : null;
+
+      /**
+       * Keys/example: ['title', 'email', ....]
+       */
+      const keys: string[] = JoiDetails.reduce((accumulator, item) => {
+        const path = item.path;
+
+        return [...accumulator, ...path];
+      }, []);
+
+      const object = { name, message, status, segment, keys, details };
+
+      const _data = { _data: _original };
+
+      const exception = toData ? Object.assign(object, _data) : object;
+
+      return { exception };
+    }
+
+    return (
+      error: MiddlewareError,
+      request: Request,
+      response: Response,
+      next: NextFunction
+    ) => {
+      const { path, method } = request;
+
       const isCelebrateOrJoiValidationError = isCelebrateError(error);
 
       const isCelebrateErrorReverse = !isCelebrateOrJoiValidationError;
 
       if (isCelebrateErrorReverse) {
+        // Call the next "express" middlerare/send Error Object.
         return next(error);
       }
 
+      // Map()
       const celebrateErrorDetails = [...error.details.entries()];
 
-      console.log({ ...error });
+      // At or unix timestamp.
+      const at = Math.floor(Date.now() / 1000);
 
-      for (const [segment, celebrateError] of celebrateErrorDetails) {
-        const { name, message, isJoi, details, _original } = celebrateError;
+      const _meta = { path, method, at };
 
-        const d = this.normalize(details); // Normalizing
+      let celebrateException = {};
 
-        return response.json({
-          error: {
-            [segment]: {
-              name,
-              message,
-              d,
-            },
+      for (const [segment, celebrateValidationError] of celebrateErrorDetails) {
+        const { exception } = menipulate(celebrateValidationError, segment);
 
-            isJoi,
-            _original,
-          },
-        });
+        // @TODO: Add "exception"
+        const error = toSegment ? { [segment]: exception } : exception;
+
+        celebrateException = error;
       }
 
-      return next(error);
+      // Send ERROR.
+      response.status(status);
+
+      return response.json({ error: celebrateException, _meta });
     };
   }
 }
 
-const mw = new CelebrateGuardMiddleware();
+const celebrateValidation = CelebrateValidation.getInstance();
 
-export { mw };
+export { celebrateValidation };

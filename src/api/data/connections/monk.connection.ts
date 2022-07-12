@@ -62,7 +62,6 @@ class MonkConnection {
       appname: 'hits',
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      autoReconnect: true,
     });
 
     this.monk = monkConnectionInstance;

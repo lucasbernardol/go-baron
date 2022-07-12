@@ -1,9 +1,6 @@
 import express, { Application } from 'express';
-import { errors } from 'celebrate';
 import cors from 'cors';
-
 import compression from 'compression';
-
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
@@ -14,7 +11,7 @@ import {
 } from '../../shared/constants/path.constants';
 
 import { compressionFilter } from '../core/middlewares/compression.middleware';
-import { mw } from '../core/middlewares/celebrate.middleware';
+import { celebrateValidation } from '../core/middlewares/celebrate.middleware';
 
 import { routes } from '../core/routes/v1/proxy.routes';
 
@@ -37,6 +34,12 @@ class ExpressConfiguration {
   /** @private constructor */
   private constructor() {}
 
+  private options: Record<string, any> = {
+    compresison: {
+      filter: compressionFilter(),
+    },
+  };
+
   /**
    * - Express "config".
    * @example
@@ -52,11 +55,7 @@ class ExpressConfiguration {
 
   public connect(): ExpressConfiguration {
     /** middlewares */
-    this.express.use(
-      compression({
-        filter: compressionFilter(),
-      })
-    );
+    this.express.use(compression(this.options.compression));
 
     this.express.use(express.json());
     this.express.use(express.urlencoded({ extended: false }));
@@ -85,9 +84,10 @@ class ExpressConfiguration {
      */
     this.express.use(routes);
 
-    this.express.use(mw.mw());
-
-    this.express.use(errors());
+    /**
+     * Catch/Error middleweares
+     */
+    this.express.use(celebrateValidation.mw());
 
     return this;
   }
