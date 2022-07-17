@@ -5,7 +5,7 @@ import { Hits, Hit } from '@data/connections/monk.connection';
 
 import { isNullable } from '@shared/utils/isNullable.util';
 import { isObjectID } from '@shared/utils/isObjectID.util';
-import { likeRegexpOperator } from '@shared/utils/regexp.utills';
+import { likeRegexpOperator } from '@shared/utils/regexp.utils';
 import { descAndAscToDecimal } from '@shared/utils/sorting.util';
 
 import { hash } from '../providers/publicHash.provider';

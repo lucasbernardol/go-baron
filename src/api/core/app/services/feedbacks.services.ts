@@ -4,9 +4,11 @@ import { paginate } from 'paging-util';
 import { Feedbacks, Feedback } from '@data/connections/monk.connection';
 
 import { isObjectID } from '@shared/utils/isObjectID.util';
-import { likeRegexpOperator } from '@shared/utils/regexp.utills';
-import { paginationNormalize } from '@shared/utils/pagination.util';
+import { likeRegexpOperator } from '@shared/utils/regexp.utils';
+
 import { descAndAscToDecimal } from '@shared/utils/sorting.util';
+import { paginationNormalize } from '@shared/utils/pagination.util';
+import { normalizeCollection } from '@shared/utils/normalizeCollection.util';
 
 import { url } from '../providers/gravatar.provider';
 
@@ -45,20 +47,6 @@ type FeedbackUpdateOptions = {
   options: FeedbackDTO;
 };
 
-function normalize<T>(instance: T) {
-  const keys = Object.keys(instance);
-
-  const object = keys.reduce((accumulator, key) => {
-    const itemKey = key === '_id' ? 'id' : key;
-
-    return { ...accumulator, [itemKey]: instance[key] };
-  }, {} as any);
-
-  const { id, ...fields } = object;
-
-  return { id, ...fields } as Partial<T>;
-}
-
 /** @class FeebackServices */
 export class FeedbackServices {
   private readonly fields: Array<keyof Feedback> = [
@@ -66,7 +54,6 @@ export class FeedbackServices {
     'short_description',
     'long_description',
     'author_name',
-    'public_email',
     'github_username',
     'avatar_url',
     'allow_gravatar',
@@ -123,33 +110,37 @@ export class FeedbackServices {
 
     // Return: [{ id: 'fa58...', ... }]
     const feedbacks = collections.map(({ _id: id, ...fields }) => {
-      const { allow_gravatar, public_email, avatar_url: avatar } = fields;
-
-      const avatar_url = allow_gravatar ? url(public_email) : avatar;
-
-      return { id, ...fields, avatar_url };
+      return { id, ...fields };
     });
 
     // Use: "snake_case"
     const pagination = paginationNormalize({ pagination: P });
 
-    return { feedbacks, pagination };
+    return {
+      feedbacks,
+      pagination,
+    };
   }
 
+  /** @method findByPk */
   async findByPk(id: string) {
     const isPrimaryKeyParam = isObjectID(id);
 
     const isNotPrimaryKey = !isPrimaryKeyParam;
 
+    // @TODO: verify "ObjectID".
     if (isNotPrimaryKey) {
       throw new BadRequest(`Provided HTTP param ERROR: "${id}"`);
     }
 
-    const collection = await Feedbacks.findOne({
-      _id: id,
-    });
+    const protection = this.collectionFields();
 
-    const feedback = collection ? normalize(collection) : null;
+    const collection = await Feedbacks.findOne(
+      { _id: id },
+      { projection: protection }
+    );
+
+    const feedback = collection ? normalizeCollection(collection) : null;
 
     return { feedback };
   }
@@ -187,7 +178,7 @@ export class FeedbackServices {
       updated_at: timestamp,
     });
 
-    const feedback = normalize(collection);
+    const feedback = normalizeCollection(collection);
 
     return { feedback };
   }
@@ -228,7 +219,7 @@ export class FeedbackServices {
       },
     });
 
-    const feedback = collection ? normalize(collection) : null;
+    const feedback = collection ? normalizeCollection(collection) : null;
 
     return { feedback };
   }

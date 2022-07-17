@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
+import { sortingUtil } from '@shared/utils/sorting.util';
+import { toNumber } from '@shared/utils/toNumber.util';
+
 import { FeedbackServices } from '../services/feedbacks.services';
 
-import { sortingUtil } from '../../../../shared/utils/sorting.util';
-import { toNumber } from '../../../../shared/utils/toNumber.util';
-
-/** @class  FeedbackController*/
+/** @class FeedbackController */
 export class FeedbackController {
   public constructor() {}
 
@@ -59,6 +59,7 @@ export class FeedbackController {
     }
   }
 
+  /** @method create */
   async create(request: Request, response: Response, next: NextFunction) {
     try {
       const {
@@ -87,7 +88,9 @@ export class FeedbackController {
         is_critical,
       });
 
-      return response.json(feedback);
+      //@TODO: Send data with "201"/create HTTP status.
+
+      return response.status(201).json(feedback);
     } catch (error) {
       return next(error);
     }
