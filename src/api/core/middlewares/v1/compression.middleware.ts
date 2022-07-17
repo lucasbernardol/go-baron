@@ -1,16 +1,16 @@
-import { Request, Response } from 'express';
 import compression from 'compression';
+import { Request, Response } from 'express';
 
-import { COMPRESSION_HEADER_IGNORE } from '../../../shared/constants/headers.constants';
+import { COMPRESSION_HEADER_IGNORE } from '@shared/constants/headers.constants';
 
 type CompressionFilter = (request: Request, response: Response) => boolean;
 
 /** @function compressionFilter */
 export function compressionFilter(): CompressionFilter {
   return (request: Request, response: Response) => {
-    const compressionIgnore = request.get(COMPRESSION_HEADER_IGNORE);
+    const compressionIgnoreHeader = request.get(COMPRESSION_HEADER_IGNORE);
 
-    if (compressionIgnore) {
+    if (compressionIgnoreHeader) {
       // Ignore "g-zip" compression
       return false;
     }

@@ -2,7 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
-import hpp from 'hpp';
+import hpp, { Options as HppOptions } from 'hpp';
 import morgan from 'morgan';
 import icon from 'serve-favicon';
 
@@ -12,8 +12,8 @@ import {
   HAT_FAVICON_PATH,
 } from '@shared/constants/path.constants';
 
-import { compressionFilter } from '../core/middlewares/compression.middleware';
-import { celebrateValidation } from '../core/middlewares/celebrate.middleware';
+import { compressionFilter } from '../core/middlewares/v1/compression.middleware';
+import { celebrateValidation } from '../core/middlewares/v1/celebrate.middleware';
 
 import { routes } from '../core/routes/v1/proxy.routes';
 
@@ -40,6 +40,10 @@ class ExpressConfiguration {
     compresison: {
       filter: compressionFilter(),
     },
+
+    hpp: {
+      checkBody: false,
+    } as HppOptions,
   };
 
   /**
@@ -70,7 +74,13 @@ class ExpressConfiguration {
     /** Add cors  */
     this.express.use(cors());
 
-    this.express.use(hpp());
+    /**
+     * - HTTP Parameter Pollution attacks
+     * @see https://www.npmjs.com/package/hpp
+     */
+    const hppOptions = { ...this.options.hpp };
+
+    this.express.use(hpp(hppOptions));
 
     /** Static files */
     this.staticFolderAndViewsEngine();
@@ -81,11 +91,12 @@ class ExpressConfiguration {
      */
     this.express.use(morgan('dev'));
 
+    /**
+     * Proxy: Heroku
+     */
     this.express.set('trust proxy', true);
 
-    /**
-     * Routes
-     */
+    /** Routes */
     this.express.use(icon(HAT_FAVICON_PATH));
 
     this.express.use(routes);
