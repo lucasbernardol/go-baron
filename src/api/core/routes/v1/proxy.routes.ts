@@ -4,6 +4,7 @@ import { MainController } from '../../app/controllers/main.controllers';
 
 import { HitRouter } from './hits.routes';
 import { FeedbackRouter } from './feedbacks.routes';
+import { HealthRouter } from './health.routes';
 
 const routes = Router();
 
@@ -15,7 +16,7 @@ const controller = new MainController();
 routes.get('/', controller.home);
 
 /**
- * @route "/"
+ * @route "/feedbacks"
  */
 routes.get('/feedbacks', controller.feedbacks);
 
@@ -28,6 +29,11 @@ routes.use('/api/v1', HitRouter);
  * @route "/api/v1/feedbacks"
  */
 routes.use('/api/v1', FeedbackRouter);
+
+/**
+ * @route "/api/v1/health"
+ */
+routes.use('/api/v1', HealthRouter);
 
 /**
  * @route "/*" - Not found
