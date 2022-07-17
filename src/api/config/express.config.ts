@@ -4,11 +4,13 @@ import compression from 'compression';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
+import icon from 'serve-favicon';
 
 import {
   VIEWS_DIRECTORY,
   STATIC_DIRECTORY,
-} from '../../shared/constants/path.constants';
+  HAT_FAVICON_PATH,
+} from '@shared/constants/path.constants';
 
 import { compressionFilter } from '../core/middlewares/compression.middleware';
 import { celebrateValidation } from '../core/middlewares/celebrate.middleware';
@@ -79,9 +81,13 @@ class ExpressConfiguration {
      */
     this.express.use(morgan('dev'));
 
+    this.express.set('trust proxy', true);
+
     /**
      * Routes
      */
+    this.express.use(icon(HAT_FAVICON_PATH));
+
     this.express.use(routes);
 
     /**
