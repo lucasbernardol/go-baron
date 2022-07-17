@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { sortingUtil } from '@shared/utils/sorting.util';
 import { toNumber } from '@shared/utils/toNumber.util';
 
-import { FeedbackServices } from '../services/feedbacks.services';
+import { Services } from '../services/feedbacks.services';
 
 /** @class FeedbackController */
 export class FeedbackController {
@@ -24,9 +24,7 @@ export class FeedbackController {
       const sorting = sortingUtil({ sort, order }, 'created_at');
 
       // Feedbacks
-      const services = new FeedbackServices();
-
-      const { feedbacks, pagination } = await services.all({
+      const { feedbacks, pagination } = await Services.all({
         onlyPinned: true, // "allow_pinned: true"
         queries: {
           page: toNumber(page, 1),
@@ -49,9 +47,7 @@ export class FeedbackController {
       // Path: "/api/v1/feedbacks/:id"
       const { id } = request.params;
 
-      const services = new FeedbackServices();
-
-      const { feedback } = await services.findByPk(id);
+      const { feedback } = await Services.findByPk(id);
 
       return response.json(feedback);
     } catch (error) {
@@ -74,9 +70,7 @@ export class FeedbackController {
         is_critical,
       } = request.body;
 
-      const services = new FeedbackServices();
-
-      const { feedback } = await services.create({
+      const { feedback } = await Services.create({
         title,
         short_description,
         long_description,
@@ -114,9 +108,7 @@ export class FeedbackController {
         is_critical,
       } = request.body;
 
-      const services = new FeedbackServices();
-
-      const { feedback } = await services.update({
+      const { feedback } = await Services.update({
         id,
         options: {
           title,
@@ -143,9 +135,7 @@ export class FeedbackController {
       // Path: "/api/v1/feedbacks/:id"
       const { id } = request.params;
 
-      const services = new FeedbackServices();
-
-      const { deleted_count } = await services.delete(id);
+      const { deleted_count } = await Services.delete(id);
 
       return response.json({ deleted_count });
     } catch (error) {

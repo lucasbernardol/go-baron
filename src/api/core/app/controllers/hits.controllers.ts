@@ -1,18 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { paginationNormalize } from '../../../../shared/utils/pagination.util';
-import { sortingUtil } from '../../../../shared/utils/sorting.util';
-import { toNumber } from '../../../../shared/utils/toNumber.util';
+import { sortingUtil } from '@shared/utils/sorting.util';
+import { toNumber } from '@shared/utils/toNumber.util';
+import { paginationNormalize } from '@shared/utils/pagination.util';
 
-import { HitServices } from '../services/hits.services';
-
-type AllRequestQueries = {
-  page: number;
-  limit: number;
-  sort: string;
-  order: string;
-  q: string;
-};
+import { Services } from '../services/hits.services';
 
 /**
  * @class HitControllers
@@ -32,9 +24,7 @@ export class HitController {
       const hasPolluted = Object.keys(polluted_query).length >= 1;
 
       // @TODO: all with "allow_pinned: true"
-      const services = new HitServices();
-
-      const { hits, pagination: p } = await services.all({
+      const { hits, pagination: p } = await Services.all({
         onlyPinned: true,
         queries: {
           page: toNumber(page, 1),
@@ -64,9 +54,7 @@ export class HitController {
       // Path: api/v1/hits/:id
       const { id } = request.params;
 
-      const services = new HitServices();
-
-      const { hit } = await services.findByID(id);
+      const { hit } = await Services.findByID(id);
 
       return response.json(hit);
     } catch (error) {
@@ -79,9 +67,7 @@ export class HitController {
       // Path: api/v1/hit/hash/:hash ("private_hash")
       const { hash } = request.params;
 
-      const services = new HitServices();
-
-      const { hit } = await services.findByPrivateHash(hash);
+      const { hit } = await Services.findByPrivateHash(hash);
 
       return response.json(hit);
     } catch (error) {
@@ -103,9 +89,7 @@ export class HitController {
         allow_pinned,
       } = request.body;
 
-      const services = new HitServices();
-
-      const { hit } = await services.create({
+      const { hit } = await Services.create({
         title,
         description,
         website_url,
@@ -115,12 +99,15 @@ export class HitController {
         allow_pinned,
       });
 
-      return response.json(hit);
+      // @TODO: Send data with 201/created HTTP status.
+
+      return response.status(201).json(hit);
     } catch (error) {
       return next(error);
     }
   }
 
+  /** @method update */
   async update(request: Request, response: Response, next: NextFunction) {
     try {
       // Path: /api/v1/hits/:private_hash
@@ -136,9 +123,7 @@ export class HitController {
         allow_pinned,
       } = request.body;
 
-      const services = new HitServices();
-
-      const { updated_count } = await services.update({
+      const { updated_count } = await Services.update({
         private_hash,
         options: {
           title,
@@ -164,9 +149,7 @@ export class HitController {
     try {
       const { public_hash } = request.params;
 
-      const services = new HitServices();
-
-      const { hits } = await services.up(public_hash);
+      const { hits } = await Services.up(public_hash);
 
       return response.json({ hits });
     } catch (error) {
@@ -178,9 +161,7 @@ export class HitController {
     try {
       const { public_hash } = request.params;
 
-      const services = new HitServices();
-
-      const { hits } = await services.down(public_hash);
+      const { hits } = await Services.down(public_hash);
 
       return response.json({ hits });
     } catch (error) {
@@ -197,9 +178,7 @@ export class HitController {
 
       const { hits } = request.body as { hits: number };
 
-      const services = new HitServices();
-
-      const data = await services.set(private_hash, hits);
+      const data = await Services.set(private_hash, hits);
 
       return response.json(data);
     } catch (error) {
@@ -212,9 +191,7 @@ export class HitController {
       // Path: "/hits/:private_hash"
       const { private_hash } = request.params;
 
-      const services = new HitServices();
-
-      const data = await services.delete(private_hash);
+      const data = await Services.delete(private_hash);
 
       return response.json(data);
     } catch (error) {

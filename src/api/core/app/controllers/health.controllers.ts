@@ -1,29 +1,41 @@
 import { NextFunction, Request, Response } from 'express';
 import ms from 'ms';
 
+import { MILLISECONDS_MULTI } from '@shared/constants/numbers.constants';
+
+export type ProcessTimeOutput = {
+  uptime_seconds: number;
+  uptime_milliseconds?: number;
+  uptime_readable: string;
+};
+
+function processTime(): ProcessTimeOutput {
+  const uptime = process.uptime(); // Node.js process time.
+
+  const uptime_seconds = Math.floor(uptime);
+
+  const uptime_milliseconds = Math.floor(uptime_seconds * MILLISECONDS_MULTI);
+
+  const uptime_readable = ms(uptime_milliseconds, { long: true });
+
+  return { uptime_seconds, uptime_readable };
+}
+
 /** @class HealthController */
 export class HealthController {
   public constructor() {}
 
-  async main(request: Request, response: Response, next: NextFunction) {
+  async main(_: Request, response: Response, next: NextFunction) {
     try {
-      const TIMESTAMP_DIVIDER = 1000;
-
       const status = 'UP';
 
-      // Up/run time
-      const uptime_seconds = Math.floor(process.uptime());
-
-      const uptimeMilliseconds = uptime_seconds * TIMESTAMP_DIVIDER;
-
-      const update_readable = ms(uptimeMilliseconds, {
-        long: true,
-      });
-
       // Unix timestamp
-      const timestamp = Math.floor(Date.now() / TIMESTAMP_DIVIDER);
+      const request_timestamp = Math.floor(Date.now() / MILLISECONDS_MULTI);
 
-      const health = { uptime_seconds, update_readable, timestamp };
+      // Up/run time
+      const uptime = processTime();
+
+      const health = { uptime, request_timestamp };
 
       return response.json({ status, health });
     } catch (error) {

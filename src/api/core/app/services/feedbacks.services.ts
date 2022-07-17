@@ -48,7 +48,9 @@ type FeedbackUpdateOptions = {
 };
 
 /** @class FeebackServices */
-export class FeedbackServices {
+class FeedbackServices {
+  private static instance: FeedbackServices;
+
   private readonly fields: Array<keyof Feedback> = [
     'title',
     'short_description',
@@ -70,9 +72,17 @@ export class FeedbackServices {
     }, {});
   }
 
-  /**
-   * @public constructor
-   **/
+  static getInstance() {
+    const feedbacksServicesInstanceNotExists = !this.instance;
+
+    if (feedbacksServicesInstanceNotExists) {
+      this.instance = new FeedbackServices();
+    }
+
+    return this.instance;
+  }
+
+  /** @private constructor */
   public constructor() {}
 
   async all({ onlyPinned, queries }: FeedbackOptions) {
@@ -237,3 +247,7 @@ export class FeedbackServices {
     };
   }
 }
+
+const Services = FeedbackServices.getInstance();
+
+export { Services };

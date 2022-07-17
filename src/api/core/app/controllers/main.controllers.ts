@@ -4,7 +4,13 @@ import {
   MAIN_TEMPLATE_NAME,
   NOT_FOUND_TEMPLATE_NAME,
   FEEDBACKS_TEMPLATE_NAME,
-} from '../../../../shared/constants/views.constants';
+} from '@shared/constants/views.constants';
+
+const clearSecurityHeaders = (): object => ({
+  'Content-Security-Policy': '',
+  'Cross-Origin-Embedder-Policy': '',
+  'Cross-Origin-Opener-Policy': '',
+});
 
 /** @class MainController */
 export class MainController {
@@ -24,12 +30,12 @@ export class MainController {
   async feedbacks(request: Request, response: Response, next: NextFunction) {
     try {
       // file "feedbacks.ejs"
-      //response.setHeader('Content-Security-Policy', '*');
-      response.set({
-        'Content-Security-Policy': '',
-        'Cross-Origin-Embedder-Policy': '',
-        'Cross-Origin-Opener-Policy': '',
-      });
+      // Clrar security headers to load gravatar/profile images.
+
+      // response.setHeader('Content-Security-Policy', '*');
+      const headers = clearSecurityHeaders();
+
+      response.set(headers);
 
       return response.render(FEEDBACKS_TEMPLATE_NAME);
     } catch (error) {

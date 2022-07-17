@@ -5,8 +5,10 @@ import { Hits, Hit } from '@data/connections/monk.connection';
 
 import { isNullable } from '@shared/utils/isNullable.util';
 import { isObjectID } from '@shared/utils/isObjectID.util';
+
 import { likeRegexpOperator } from '@shared/utils/regexp.utils';
 import { descAndAscToDecimal } from '@shared/utils/sorting.util';
+import { normalizeCollection } from '@shared/utils/normalizeCollection.util';
 
 import { hash } from '../providers/publicHash.provider';
 import { uuid } from '../providers/uuid.provider';
@@ -42,7 +44,7 @@ export type HitOptions = {
 };
 
 export type HitFindOptions = {
-  setProtection?: boolean;
+  toProtect?: boolean;
 };
 
 type HitUpdateOptions = {
@@ -50,11 +52,11 @@ type HitUpdateOptions = {
   options: HitDTO;
 };
 
-/**
- * @class HitServices
- */
-export class HitServices {
-  private allowFields: Partial<keyof Hit>[] = [
+/** @class HitServices */
+class HitServices {
+  private static instance: HitServices;
+
+  private readonly allowFields: Partial<keyof Hit>[] = [
     'title',
     'description',
     'website_url',
@@ -75,37 +77,18 @@ export class HitServices {
     return collectionFields;
   }
 
-  private hitObjectToNormalized(hit: Hit) {
-    const keys = Object.keys(hit);
+  /** @method getInstance */
+  static getInstance() {
+    const hitServicesIntanceNotExits = !this.instance;
 
-    const object = keys.reduce((accumulator, key) => {
-      // Replace: "_id" to "id".
-      const propertyKey = key === '_id' ? 'id' : key;
+    if (hitServicesIntanceNotExits) {
+      this.instance = new HitServices();
+    }
 
-      return { ...accumulator, [propertyKey]: hit[key] };
-    }, {});
-
-    return object as Partial<Hit>;
+    return this.instance;
   }
 
-  private async findByParams(
-    filter: Partial<Hit>,
-    { setProtection = true }: HitFindOptions = {}
-  ) {
-    const collectionProtectionFields = setProtection
-      ? this.allowCollectionFields()
-      : {};
-
-    const hitPlain = await Hits.findOne(filter, {
-      projection: collectionProtectionFields,
-    });
-
-    const hit = hitPlain ? this.hitObjectToNormalized(hitPlain) : hitPlain;
-
-    return hit;
-  }
-
-  /** @public contructor */
+  /** @private contructor */
   public constructor() {}
 
   async all({ onlyPinned, queries }: HitOptions) {
@@ -147,6 +130,49 @@ export class HitServices {
       hits,
       pagination,
     };
+  }
+
+  private async find(
+    filter: Partial<Hit>,
+    options: HitFindOptions = { toProtect: true }
+  ) {
+    const { toProtect } = options;
+
+    const protection = toProtect ? this.allowCollectionFields() : {};
+
+    const collection = await Hits.findOne(filter, {
+      projection: protection,
+    });
+
+    return collection ? normalizeCollection(collection) : collection;
+  }
+
+  /**
+   * - Find "Hit" or collection by primary key.
+   */
+  async findByID(id: string) {
+    const isParamIsObjectID = isObjectID(id);
+
+    if (!isParamIsObjectID) {
+      // @TODO: Is "ObjectID"?
+      throw new BadRequest(`Provided HTTP param ERROR: "${id}"`);
+    }
+
+    const hit = await this.find({ _id: id });
+
+    return { hit };
+  }
+
+  /**
+   * - Find "Hit" or collection by secret uuid/hash.
+   */
+  async findByPrivateHash(hash: string) {
+    const filter = { private_hash: hash };
+
+    // @TODO: Return "all" data.
+    const hit = await this.find(filter, { toProtect: false });
+
+    return { hit };
   }
 
   /** @method create  */
@@ -228,35 +254,8 @@ export class HitServices {
     };
   }
 
-  async findByID(id: string) {
-    const isParamIsObjectID = isObjectID(id);
-
-    if (!isParamIsObjectID) {
-      // @TODO: Is "ObjectID"?
-      throw new BadRequest(`Provided HTTP param ERROR: "${id}"`);
-    }
-
-    const hit = await this.findByParams({ _id: id });
-
-    return {
-      hit,
-    };
-  }
-
-  async findByPrivateHash(hash: string) {
-    const filter = { private_hash: hash };
-
-    // @TODO: Return "all" data.
-    const hit = await this.findByParams(filter, {
-      setProtection: false,
-    });
-
-    return {
-      hit,
-    };
-  }
-
   /**
+   * - Increment/increase the hit counter.
    * @method up
    * @example
    *  let hits = 10;
@@ -277,6 +276,7 @@ export class HitServices {
   }
 
   /**
+   * - Decrement/decrease the hit counter.
    * @method down
    * @example
    *  let hits = 10;
@@ -285,17 +285,17 @@ export class HitServices {
   async down(public_hash: string) {
     const filter = { public_hash } as Hit;
 
-    // TODO: Into database find "hit" instance.
-    const hitReturnedInstance = await Hits.findOne(filter);
+    // TODO: Find "hit" instance.
+    const hitCollection = await Hits.findOne(filter);
 
-    const isNullableHitInstance = isNullable(hitReturnedInstance);
+    const isNullableHitCollection = isNullable(hitCollection);
 
-    if (isNullableHitInstance) {
+    if (isNullableHitCollection) {
       throw new BadRequest(`Provided HTTP params ERROR: "${public_hash}"`);
     }
 
     // @TODO: down "hits" with "public_hash".
-    const { allow_negative, hits: currentHits } = hitReturnedInstance;
+    const { allow_negative, hits: currentHits } = hitCollection;
 
     const DOWN_OPERATOR_VALUE = -1;
 
@@ -315,20 +315,17 @@ export class HitServices {
   async set(private_hash: string, value: number) {
     const filter = { private_hash } as Hit;
 
-    const hitReturnedPlainInstance = await Hits.findOne(filter);
+    const hitCollection = await Hits.findOne(filter);
 
-    const isNullableHitPlainInstance = isNullable(hitReturnedPlainInstance);
+    const isNullableHitCollection = isNullable(hitCollection);
 
-    if (isNullableHitPlainInstance) {
+    if (isNullableHitCollection) {
+      // @TODO: Send "private_hash" error.
       throw new BadRequest(`Provided HTTP param ERROR: "${private_hash}"`);
     }
 
-    // @TODO: set value
-    const {
-      allow_set,
-      allow_negative,
-      hits: currentHits,
-    } = hitReturnedPlainInstance;
+    // @TODO: Set/update hits
+    const { allow_set, allow_negative, hits: currentHits } = hitCollection;
 
     const hitsToSet = value <= 0 && !allow_negative ? currentHits : value;
 
@@ -354,3 +351,7 @@ export class HitServices {
     return { deleted_count };
   }
 }
+
+const Services = HitServices.getInstance();
+
+export { Services };
