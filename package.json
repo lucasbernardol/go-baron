@@ -2,10 +2,10 @@
   "name": "go-baron",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
     "husky:i": "husky install",
-    "dev": "ts-node-dev --transpile-only --respawn src/main.ts"
+    "dev": "ts-node-dev -r tsconfig-paths/register --transpile-only --respawn --ignore-watch node_modules src/main.ts"
   },
   "repository": {
     "type": "git",
