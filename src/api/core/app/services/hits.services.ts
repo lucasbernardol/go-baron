@@ -1,15 +1,15 @@
-import createHttpError, { BadRequest } from 'http-errors';
+import { BadRequest } from 'http-errors';
 import { paginate } from 'paging-util';
+
+import { Hits, Hit } from '@data/connections/monk.connection';
+
+import { isNullable } from '@shared/utils/isNullable.util';
+import { isObjectID } from '@shared/utils/isObjectID.util';
+import { likeRegexpOperator } from '@shared/utils/regexp.utills';
+import { descAndAscToDecimal } from '@shared/utils/sorting.util';
 
 import { hash } from '../providers/publicHash.provider';
 import { uuid } from '../providers/uuid.provider';
-
-import { Hits, Hit } from '../../../data/connections/monk.connection';
-
-import { isObjectID } from '../../../../shared/utils/isObjectID.util';
-import { likeRegexpOperator } from '../../../../shared/utils/regexp.utills';
-import { descAndAscToDecimal } from '../../../../shared/utils/sorting.util';
-import { isNullable } from '../../../../shared/utils/isNullable.util';
 
 export type HitDTO = {
   title?: string;

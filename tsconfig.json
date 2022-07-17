@@ -9,7 +9,12 @@
 
     "outDir": "./dist",
     "rootDir": "./src",
-    //"baseUrl": "./src",
+
+    "baseUrl": "./src",
+    "paths": {
+      "@data/*": ["api/data/*"],
+      "@shared/*": ["shared/*"]
+    },
 
     "removeComments": true,
     "isolatedModules": false,

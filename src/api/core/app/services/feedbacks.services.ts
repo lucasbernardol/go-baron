@@ -1,13 +1,14 @@
 import { BadRequest } from 'http-errors';
 import { paginate } from 'paging-util';
 
-import { url } from '../providers/gravatar.provider';
-import { Feedbacks, Feedback } from '../../../data/connections/monk.connection';
+import { Feedbacks, Feedback } from '@data/connections/monk.connection';
 
-import { likeRegexpOperator } from '../../../../shared/utils/regexp.utills';
-import { paginationNormalize } from '../../../../shared/utils/pagination.util';
-import { descAndAscToDecimal } from '../../../../shared/utils/sorting.util';
-import { isObjectID } from '../../../../shared/utils/isObjectID.util';
+import { isObjectID } from '@shared/utils/isObjectID.util';
+import { likeRegexpOperator } from '@shared/utils/regexp.utills';
+import { paginationNormalize } from '@shared/utils/pagination.util';
+import { descAndAscToDecimal } from '@shared/utils/sorting.util';
+
+import { url } from '../providers/gravatar.provider';
 
 type FeedbackDTO = {
   title: string;
