@@ -123,7 +123,7 @@ export class HitController {
         allow_pinned,
       } = request.body;
 
-      const { updated_count } = await Services.update({
+      const { hit } = await Services.update({
         private_hash,
         options: {
           title,
@@ -136,7 +136,7 @@ export class HitController {
         },
       });
 
-      return response.json({ updated_count });
+      return response.json(hit);
     } catch (error) {
       return next(error);
     }

@@ -11,6 +11,11 @@ const hitCreationSchema = Joi.object({
   allow_pinned: Joi.boolean().optional().default(true),
 });
 
+// PATH: POST /hits
 const hitUpdateSchema = hitCreationSchema;
 
-export { hitCreationSchema, hitUpdateSchema };
+const hitSetSchema = Joi.object({
+  hits: Joi.number().required(),
+});
+
+export { hitCreationSchema, hitUpdateSchema, hitSetSchema };

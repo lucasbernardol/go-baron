@@ -18,7 +18,7 @@ function processTime(): ProcessTimeOutput {
 
   const uptime_readable = ms(uptime_milliseconds, { long: true });
 
-  return { uptime_seconds, uptime_readable };
+  return { uptime_seconds, uptime_milliseconds, uptime_readable };
 }
 
 /** @class HealthController */
@@ -35,9 +35,9 @@ export class HealthController {
       // Up/run time
       const uptime = processTime();
 
-      const health = { uptime, request_timestamp };
+      const health = { uptime };
 
-      return response.json({ status, health });
+      return response.json({ status, health, request_timestamp });
     } catch (error) {
       return next(error);
     }

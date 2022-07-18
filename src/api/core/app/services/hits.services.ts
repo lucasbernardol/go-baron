@@ -190,14 +190,14 @@ class HitServices {
     } = options;
 
     // @TODO Fields: "created_at" and "updated_at"
-    const date = new Date();
+    const timestamp = new Date();
 
     // @TODO ID "public" and "private"
     const public_hash = hash();
 
     const private_hash = uuid();
 
-    const hit = await Hits.insert({
+    const hitInsetedCollection = await Hits.insert({
       title,
       description,
       website_name,
@@ -208,22 +208,21 @@ class HitServices {
       allow_set,
       allow_negative,
       allow_pinned,
-      created_at: date,
-      updated_at: date,
+      created_at: timestamp,
+      updated_at: timestamp,
     });
 
-    return {
-      hit,
-    };
+    const hit = normalizeCollection(hitInsetedCollection) as Hit;
+
+    return { hit };
   }
 
   /** @method update  */
   async update({ private_hash, options }: HitUpdateOptions) {
-    const { title, description, website_name, website_url, ...other } = options;
+    const { title, description, website_name, website_url, ...others } =
+      options;
 
-    const match = {
-      private_hash,
-    } as Hit;
+    const match = { private_hash } as Hit;
 
     const hitCollectionIn = await Hits.findOne(match);
 
@@ -236,22 +235,20 @@ class HitServices {
     // @TODO: Set: "updated_at" field
     const updated_at = new Date();
 
-    const hitCollectionUpdated = await Hits.update(match, {
+    const hitCollectionUpdated = await Hits.findOneAndUpdate(match, {
       $set: {
         title,
         description,
         website_name,
         website_url,
-        ...other,
+        ...others,
         updated_at,
       },
     });
 
-    const { nModified: updated_count } = hitCollectionUpdated;
+    const hit = normalizeCollection(hitCollectionUpdated);
 
-    return {
-      updated_count,
-    };
+    return { hit };
   }
 
   /**

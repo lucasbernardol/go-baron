@@ -6,6 +6,7 @@ import { HitController } from '../../app/controllers/hits.controllers';
 import {
   hitCreationSchema,
   hitUpdateSchema,
+  hitSetSchema,
 } from '../../app/validators/hits.validators';
 
 const controller = new HitController();
@@ -27,7 +28,11 @@ routes.patch('/hits/down/:public_hash', controller.down);
 /**
  * - Private HASH
  */
-routes.patch('/hits/set/:private_hash', controller.set);
+routes.patch(
+  '/hits/set/:private_hash',
+  celebrate({ body: hitSetSchema }),
+  controller.set
+);
 
 routes.put(
   '/hits/:private_hash',

@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { GRAVATAR_URL } from '../../../../shared/constants/url.constants';
+import { GRAVATAR_URL } from '@shared/constants/url.constants';
 
 type D = '404' | 'retro';
 
