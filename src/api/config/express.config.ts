@@ -1,4 +1,4 @@
-import express, { Application } from 'express';
+import express, { Application as ExpressApplication } from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
@@ -21,7 +21,7 @@ import { routes } from '../core/routes/v1/proxy.routes';
 class ExpressConfiguration {
   private static instance: ExpressConfiguration;
 
-  public express: Application;
+  public express: ExpressApplication;
 
   /** @method getInstance */
   static getInstance(): ExpressConfiguration {
