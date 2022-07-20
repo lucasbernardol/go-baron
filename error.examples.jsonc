@@ -1,0 +1,62 @@
+{
+  "errors": [
+    // Celebrate/Joi validation ERROR:
+    {
+      "body": {
+        "name": "ValidationError",
+        "message": "\"title\" is not allowed to be empty",
+        "status": 400,
+        "segment": "body",
+        "keys": ["title"],
+        // key "details" is optional.
+        "details": [
+          {
+            "key": "title",
+            "type": "STRING.EMPTY",
+            "message": "\"title\" is not allowed to be empty",
+            "context": {
+              "key": "title",
+              "label": "title",
+              "value": ""
+            }
+          }
+        ],
+        // key "_data" is optional.
+        "_data": {
+          "title": "",
+          "short_description": null,
+          "long_description": "Lorem ipsum is dolor amet connect ur...",
+          "author_name": "José Lucas",
+          "public_email": "email.example@gmail.com",
+          "github_username": "lucasbernardol",
+          "allow_pinned": true,
+          "allow_gravatar": true,
+          "is_critical": true
+        }
+      },
+      // HTTP info.
+      "_meta": {
+        "method": "POST",
+        "path": "/api/v1/feedbacks",
+        "protocol": "http",
+        "secure": false,
+        "timestamp": 1658349621
+      }
+    },
+    // HTTP params ERROR:
+    {
+      "error": {
+        "name": "BadRequestError",
+        "status": 400,
+        "message": "Provided HTTP param ERROR: \"62c457166e2a210d642a635g\"",
+        "_meta": {
+          "method": "GET",
+          "path": "/api/v1/feedbacks/62c457166e2a210d642a635g",
+          "protocol": "http",
+          "secure": false,
+          "timestamp": 1658349989
+        }
+      }
+    }
+  ]
+}
