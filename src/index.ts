@@ -1,9 +1,8 @@
 import 'dotenv/config';
-
-import { App } from './api/main';
-import { env } from './api/config/environment.config';
-
+import { env } from '@config/environment.config';
 import { connection } from '@data/connections/monk.connection';
+
+import { App } from './main';
 
 /** Run/server */
 const server = App.listen({
@@ -16,7 +15,7 @@ const server = App.listen({
 /** GracefulShutdown handler */
 async function gracefulShutdown(signal: string): Promise<void> {
   try {
-    console.log(`\nSERVER: End with signal code: "${signal}"`);
+    console.log(`\nSERVER: End with signal/code: "${signal}"`);
 
     async function autoClosing(): Promise<void> {
       await connection.close();
