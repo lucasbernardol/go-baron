@@ -6,6 +6,7 @@
   "scripts": {
     "husky:i": "husky install",
     "start": "node dist/main.js",
+    "prebuild": "rimraf build",
     "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files --no-copy-ignored",
     "dev": "ts-node-dev -r tsconfig-paths/register --transpile-only --respawn --ignore-watch node_modules src/main.ts"
   },
