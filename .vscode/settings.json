@@ -1,5 +1,8 @@
 {
   "material-icon-theme.folders.associations": {
-    "validators": "helper"
+    "validators": "helper",
+    "boot": "tools",
+    "_boot": "tools",
+    "__boot__": "tools"
   }
 }
