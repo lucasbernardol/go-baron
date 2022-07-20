@@ -1,18 +1,16 @@
-import { createServer, Server as HTTPServer } from 'http';
-
+import { createServer, Server as ApplicationServer } from 'http';
 import { Application } from 'express';
 
-import { isFunction } from '../../shared/utils/isFunction.util';
+import { isFunction } from '@shared/utils/isFunction.util';
+
+export type ServerInitOptions = {
+  useNativeHTTP?: boolean;
+};
 
 type CallbackOptions = {
   port: number;
-  at?: number;
-};
-
-export type ServerListenCallback = (options: CallbackOptions) => void;
-
-export type ServerInitOptions = {
-  allowNativeHTTPServer?: boolean;
+  timestamp?: number;
+  processId: number;
 };
 
 export type ServerListenOptions = {
@@ -20,12 +18,16 @@ export type ServerListenOptions = {
   serverListenCallback?: ServerListenCallback;
 };
 
+export type ServerListenCallback = (options: CallbackOptions) => void;
+
+/** @class ServerConfiguration */
 export class ServerConfiguration {
+  private _server: ApplicationServer = null;
+
   private static instance: ServerConfiguration;
+  private readonly port: number = 3333;
 
-  private port: number = 3333;
-
-  private application: Application | HTTPServer;
+  private application: Application | ApplicationServer;
 
   static getInstance(): ServerConfiguration {
     const serverInstanceNotExists = !this.instance;
@@ -40,15 +42,22 @@ export class ServerConfiguration {
   /** @private constructor */
   private constructor() {}
 
+  /** GET/SET */
+  get server(): ApplicationServer {
+    return this._server;
+  }
+
+  private set server(serverInstance: ApplicationServer) {
+    this._server = serverInstance;
+  }
+
   public init(
     application: Application,
     options: ServerInitOptions = {}
   ): ServerConfiguration {
-    const { allowNativeHTTPServer = false } = options;
+    const { useNativeHTTP = false } = options;
 
-    this.application = allowNativeHTTPServer
-      ? createServer(application)
-      : application;
+    this.application = useNativeHTTP ? createServer(application) : application;
 
     return this;
   }
@@ -57,19 +66,28 @@ export class ServerConfiguration {
     port = this.port,
     serverListenCallback,
   }: ServerListenOptions = {}) {
-    const isCallbackFunction =
-      serverListenCallback && isFunction(serverListenCallback);
+    const isCallback = serverListenCallback && isFunction(serverListenCallback);
 
     // Function: (port: number) => callcack(port);
-    const handleCallBackFn = isCallbackFunction
-      ? (port: number, at?: number) => serverListenCallback({ port, at })
+    const handleCallBackFn = isCallback
+      ? (options: CallbackOptions) => serverListenCallback(options)
       : () => console.log(`\nPORT: ${port}`);
 
-    this.application.listen(port, () => {
-      const at = Math.floor(Date.now() / 1000); // Unix Date
+    const server = this.application.listen(port, () => {
+      const processId: number = process.pid;
 
-      return handleCallBackFn(port, at);
+      // @TODO: Unix timestamp/ISO string.
+      const now = Date.now();
+
+      const timestamp = Math.floor(now / 1000);
+
+      return handleCallBackFn({ port, timestamp, processId });
     });
+
+    // SaveInstance
+    this.server = server;
+
+    return server;
   }
 }
 
