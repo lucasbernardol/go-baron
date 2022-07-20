@@ -12,6 +12,7 @@
 
     "baseUrl": "./src",
     "paths": {
+      "@boot/*": ["boot/*"],
       "@config/*": ["api/config/*"],
       "@data/*": ["api/data/*"],
       "@shared/*": ["shared/*"]
