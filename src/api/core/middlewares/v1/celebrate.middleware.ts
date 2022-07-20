@@ -5,18 +5,27 @@ import { Context, ValidationErrorItem, ValidationError } from 'joi';
 
 type MiddlewareError = CelebrateError | Error;
 
-type Options = {
+export type Options = {
   status?: number;
   toData?: boolean;
   toDetails?: boolean;
   toSegment?: boolean;
 };
 
-type CelebrateDetails = {
+export type CelebrateDetails = {
   key: string;
   type: string;
   message: string;
   context: Context;
+};
+
+export type ParamsMeta = {
+  method: string;
+  path: string;
+  protocol: string;
+  secure: boolean;
+  /** Unix timestamp/request date */
+  timestamp: number;
 };
 
 /** Util */
@@ -106,7 +115,7 @@ class CelebrateValidation {
       response: Response,
       next: NextFunction
     ) => {
-      const { path, method } = request;
+      const { path, method, protocol, secure } = request;
 
       const isCelebrateOrJoiValidationError = isCelebrateError(error);
 
@@ -120,10 +129,10 @@ class CelebrateValidation {
       // Map()
       const celebrateErrorDetails = [...error.details.entries()];
 
-      // At or unix timestamp.
-      const at = Math.floor(Date.now() / 1000);
+      // At or Unix timestamp.
+      const timestamp = Math.floor(Date.now() / 1000);
 
-      const _meta = { path, method, at };
+      const _meta: ParamsMeta = { method, path, protocol, secure, timestamp };
 
       let celebrateException = {};
 
@@ -136,10 +145,12 @@ class CelebrateValidation {
         celebrateException = error;
       }
 
+      const exception = Object.assign(celebrateException, { _meta });
+
       // Send ERROR.
       response.status(status);
 
-      return response.json({ error: celebrateException, _meta });
+      return response.json({ error: exception });
     };
   }
 }

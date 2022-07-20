@@ -14,6 +14,7 @@ import {
 
 import { compressionFilter } from '../core/middlewares/v1/compression.middleware';
 import { celebrateValidation } from '../core/middlewares/v1/celebrate.middleware';
+import { guard } from '../core/middlewares/v1/guard.middleware';
 
 import { routes } from '../core/routes/v1/proxy.routes';
 
@@ -104,7 +105,7 @@ class ExpressConfiguration {
     /**
      * Catch/Error middleweares
      */
-    this.express.use(celebrateValidation.mw());
+    this.express.use(celebrateValidation.mw(), guard());
 
     return this;
   }
