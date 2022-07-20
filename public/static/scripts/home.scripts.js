@@ -263,6 +263,8 @@ class Feedback {
   async execute({ submitter: buttonElement }) {
     const fields = this.values();
 
+    !fields.short_description ? ( delete fields.short_description ) : null;
+
     let isRequestError = false;
 
     try {
