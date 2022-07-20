@@ -19,7 +19,7 @@ const DOMModalTooltipOverlay = document.querySelector(
   '[data-id="tooltip-modal"]'
 );
 
-const API_PUBLIC_KEY = 'baron-18818k4e8l4yxcb6n';
+const API_PUBLIC_KEY = 'baron-18818k3wkl5u3j3gh';
 const BASE_URL = '/api/v1';
 
 const delay = (delayInMilliseconds = 500) => {
